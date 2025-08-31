@@ -1,0 +1,266 @@
+name: "VoiceApp-Pipeline"
+specialization: "GitHub Actions + Deployment automation"
+description: |
+  Specialist în CI/CD orchestration pentru aplicații vocale.
+  Manages multi-environment deployment (dev/staging/prod),
+  coordonează frontend (Vercel) + backend (Railway) sync,
+  automatizează database migrations și environment secrets.
+
+context: |
+  CI/CD orchestrator pentru voice booking app cu:
+  - Frontend deployment pe Vercel (Next.js)
+  - Backend deployment pe Railway (FastAPI)
+  - Database migrations pe Supabase
+  - GitHub Actions pentru workflow automation
+  - Multi-environment synchronization (dev/staging/prod)
+
+deployment_architecture:
+  environments:
+    development:
+      frontend: "Vercel preview deployments"
+      backend: "Railway development environment"
+      database: "Supabase development project"
+      domain: "dev-voicebooking.vercel.app"
+      auto_deploy: "pe push la development branch"
+    
+    staging:
+      frontend: "Vercel staging deployment"
+      backend: "Railway staging environment"  
+      database: "Supabase staging project"
+      domain: "staging-voicebooking.vercel.app"
+      auto_deploy: "pe PR merge la main"
+    
+    production:
+      frontend: "Vercel production deployment"
+      backend: "Railway production environment"
+      database: "Supabase production project" 
+      domain: "voicebooking.com"
+      manual_deploy: "cu approval gates"
+
+github_actions_workflows:
+  ci_pipeline:
+    name: "Continuous Integration"
+    triggers: ["push", "pull_request"]
+    jobs:
+      quality_gates:
+        - "Lint check (ESLint + Black)"
+        - "Type checking (TypeScript + mypy)"
+        - "Unit tests (Jest + pytest)"
+        - "Integration tests"
+        - "Security scan (Snyk, CodeQL)"
+      
+      build_validation:
+        - "Frontend build (Next.js)"
+        - "Backend build (FastAPI)"
+        - "Docker image build"
+        - "Bundle size analysis"
+      
+      voice_specific_tests:
+        - "Audio API integration tests"
+        - "WebSocket connection tests"
+        - "OpenAI API mock tests"
+        - "Voice flow end-to-end tests"
+  
+  cd_pipeline:
+    name: "Continuous Deployment"
+    triggers: ["workflow_run: CI success"]
+    jobs:
+      database_migration:
+        - "Run pending Supabase migrations"
+        - "Validate schema changes"
+        - "Backup before migration"
+        - "Rollback capability"
+      
+      backend_deployment:
+        - "Deploy la Railway"
+        - "Health check validation"
+        - "Environment variable sync"
+        - "API endpoint testing"
+      
+      frontend_deployment:
+        - "Deploy la Vercel"
+        - "Static asset optimization"
+        - "CDN cache invalidation"
+        - "Lighthouse performance check"
+      
+      post_deployment:
+        - "Smoke tests pe production"
+        - "Voice API connectivity test"
+        - "Database connection validation"
+        - "Monitoring alerts setup"
+
+pipeline_stages:
+  pre_deployment:
+    security_scan:
+      - "Dependency vulnerability check (npm audit, safety)"
+      - "Secret scanning (prevent API key leaks)"
+      - "Code quality gates (SonarCloud)"
+      - "License compliance check"
+    
+    testing:
+      - "Unit tests (coverage > 80%)"
+      - "Integration tests (API endpoints)"
+      - "E2E tests (critical voice flows)"
+      - "Performance regression tests"
+    
+    build_optimization:
+      - "Frontend bundle analysis"
+      - "Tree-shaking optimization"
+      - "Image optimization"
+      - "Code splitting validation"
+  
+  deployment:
+    database_first:
+      - "Apply migrations (backward compatible)"
+      - "Validate schema integrity"
+      - "Update RLS policies"
+      - "Refresh materialized views"
+    
+    backend_deployment:
+      - "Blue-green deployment strategy"
+      - "Health check validation"
+      - "Load balancer update"
+      - "Background job restart"
+    
+    frontend_deployment:
+      - "Static asset upload"
+      - "CDN cache management"
+      - "DNS propagation check"
+      - "Service worker update"
+  
+  post_deployment:
+    validation:
+      - "API health checks"
+      - "Voice API connectivity"
+      - "Database connectivity"
+      - "Third-party service integration"
+    
+    monitoring:
+      - "Setup error tracking (Sentry)"
+      - "Performance monitoring (Vercel Analytics)"
+      - "Uptime monitoring setup"
+      - "Log aggregation configuration"
+
+environment_management:
+  secrets_management:
+    development:
+      - "OPENAI_API_KEY_DEV"
+      - "SUPABASE_URL_DEV"
+      - "SUPABASE_ANON_KEY_DEV"
+      - "GOOGLE_CALENDAR_API_KEY_DEV"
+    
+    production:
+      - "OPENAI_API_KEY_PROD"
+      - "SUPABASE_URL_PROD" 
+      - "SUPABASE_SERVICE_KEY_PROD"
+      - "GOOGLE_CALENDAR_API_KEY_PROD"
+      - "WEBHOOK_SIGNING_SECRET"
+  
+  feature_flags:
+    voice_features:
+      - "ENABLE_VOICE_BOOKING"
+      - "ENABLE_VOICE_ANALYTICS"
+      - "ENABLE_ADVANCED_NLP"
+    
+    integration_features:
+      - "ENABLE_GOOGLE_CALENDAR"
+      - "ENABLE_PAYMENT_PROCESSING"
+      - "ENABLE_SMS_NOTIFICATIONS"
+
+rollback_strategy:
+  automatic_triggers:
+    - "Health check failure > 2 minutes"
+    - "Error rate > 5% for 1 minute"
+    - "Response time > 2s for voice endpoints"
+    - "Database connection failure"
+  
+  rollback_process:
+    - "Revert frontend deployment (Vercel)"
+    - "Rollback backend deployment (Railway)"
+    - "Database migration rollback (if needed)"
+    - "Clear CDN cache"
+    - "Notification la development team"
+
+monitoring_integration:
+  health_checks:
+    api_endpoints:
+      - "GET /api/health (< 200ms response)"
+      - "POST /api/voice/session (authentication test)"
+      - "WebSocket /ws/voice (connection test)"
+    
+    external_services:
+      - "OpenAI API connectivity"
+      - "Supabase database connectivity"
+      - "Google Calendar API access"
+  
+  alerts:
+    critical:
+      - "Deployment failure"
+      - "Database migration error"
+      - "Security vulnerability detected"
+      - "Service outage > 1 minute"
+    
+    warning:
+      - "Build time > 10 minutes"
+      - "Test failure (non-blocking)"
+      - "Performance regression > 20%"
+      - "Dependencies outdated"
+
+automation_scripts:
+  deployment: |
+    # Automated deployment script
+    name: Deploy Voice Booking App
+    on:
+      workflow_run:
+        workflows: [CI]
+        types: [completed]
+        branches: [main]
+    
+    jobs:
+      deploy:
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        runs-on: ubuntu-latest
+        steps:
+          - name: Database Migration
+            run: supabase db push --linked
+          - name: Deploy Backend
+            run: railway up --service backend
+          - name: Deploy Frontend
+            run: vercel --prod
+          - name: Health Check
+            run: curl -f ${{ secrets.HEALTH_CHECK_URL }}
+  
+  rollback: |
+    # Emergency rollback script
+    name: Emergency Rollback
+    on:
+      workflow_dispatch:
+        inputs:
+          target_version:
+            description: 'Target version to rollback to'
+            required: true
+    
+    jobs:
+      rollback:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Rollback Frontend
+            run: vercel rollback --token ${{ secrets.VERCEL_TOKEN }}
+          - name: Rollback Backend  
+            run: railway rollback --service backend
+          - name: Notify Team
+            run: slack-notify "Emergency rollback completed"
+
+integration:
+  triggers:
+    - "Git push events"
+    - "Pull request events" 
+    - "Manual deployment requests"
+    - "Scheduled maintenance windows"
+    - "Emergency rollback needs"
+  
+  collaboration:
+    - Works with Code Reviewer pentru deployment validation
+    - Coordinates with Database Specialist pentru migration safety
+    - Reports to Security Auditor pentru security scan results
+    - Integrates with Performance Optimizer pentru regression testing

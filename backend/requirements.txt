@@ -1,0 +1,60 @@
+# FastAPI Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+
+# Pydantic for data validation
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+email-validator>=2.0.0
+
+# Supabase client
+supabase==2.0.2
+
+# OpenAI integration  
+openai>=1.0.0
+
+# HTTP clients
+httpx>=0.20.0
+requests>=2.25.0
+
+# WebSocket support
+websockets==12.0
+
+# CORS middleware
+python-multipart==0.0.6
+
+# Environment variables
+python-dotenv==1.0.0
+
+# JSON handling (orjson replaced with standard json for Windows compatibility)
+# orjson==3.9.10  # Requires Rust compiler on Windows
+
+# Date/time utilities
+python-dateutil==2.8.2
+
+# UUID generation (built-in Python module)
+# uuid==1.30  # Not needed - part of Python standard library
+
+# Logging enhancements
+structlog==23.2.0
+
+# Development dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+
+# Production server
+gunicorn==21.2.0
+
+# Security
+cryptography>=42.0.0
+bcrypt>=4.0.0
+
+# Monitoring (optional)
+sentry-sdk[fastapi]==1.38.0
+
+# Railway deployment (CLI tool - install separately if needed)
+# railway==0.0.58

@@ -1,0 +1,218 @@
+name: "VoiceApp-DataArch"
+specialization: "Supabase + PostgreSQL optimization"
+description: |
+  Specialist în design și optimizare de baze de date pentru aplicații vocale.
+  Focus pe Supabase, PostgreSQL, schema design, performance optimization,
+  și conflict resolution pentru booking systems.
+
+context: |
+  Database architect pentru aplicația vocală de programări cu:
+  - Supabase ca backend-as-a-service
+  - PostgreSQL ca database engine
+  - Row Level Security (RLS) pentru multi-tenancy
+  - Real-time subscriptions pentru live updates
+  - Complex scheduling logic cu conflict prevention
+
+database_design:
+  core_tables:
+    auth_users:
+      description: "Supabase managed user authentication"
+      relationships: "One-to-many cu toate entities"
+      rls_policy: "Users can only access their own data"
+    
+    businesses:
+      description: "Business profiles și settings"
+      key_fields: 
+        - "id (UUID, primary key)"
+        - "owner_id (UUID, FK la auth.users)"
+        - "name, description, contact_info"
+        - "business_hours (JSONB)"
+        - "timezone (TEXT)"
+      indexes:
+        - "owner_id pentru quick lookup"
+        - "created_at pentru chronological queries"
+    
+    services:
+      description: "Services offered by businesses"
+      key_fields:
+        - "id (UUID, primary key)"
+        - "business_id (UUID, FK)"
+        - "name, description, duration (INTERVAL)"
+        - "price (DECIMAL)"
+        - "is_voice_bookable (BOOLEAN)"
+      indexes:
+        - "business_id, is_voice_bookable"
+        - "duration pentru scheduling queries"
+    
+    availability_slots:
+      description: "Available time slots pentru booking"
+      key_fields:
+        - "id (UUID, primary key)"
+        - "business_id (UUID, FK)"
+        - "service_id (UUID, FK, nullable)"
+        - "start_time (TIMESTAMPTZ)"
+        - "end_time (TIMESTAMPTZ)"
+        - "is_recurring (BOOLEAN)"
+        - "recurrence_pattern (JSONB)"
+      indexes:
+        - "business_id, start_time, end_time (B-tree)"
+        - "start_time, end_time (pentru range queries)"
+      constraints:
+        - "CHECK (end_time > start_time)"
+        - "EXCLUDE using gist (tstzrange(start_time, end_time) WITH &&)"
+    
+    bookings:
+      description: "Customer bookings/appointments"
+      key_fields:
+        - "id (UUID, primary key)"
+        - "business_id (UUID, FK)"
+        - "service_id (UUID, FK)"
+        - "customer_id (UUID, FK la auth.users)"
+        - "start_time (TIMESTAMPTZ)"
+        - "end_time (TIMESTAMPTZ)"
+        - "status (booking_status_enum)"
+        - "voice_session_id (UUID, nullable)"
+        - "created_via (TEXT: 'voice'|'web'|'admin')"
+      indexes:
+        - "business_id, start_time (pentru scheduling)"
+        - "customer_id, start_time (pentru user bookings)"
+        - "status pentru filtering"
+      constraints:
+        - "EXCLUDE using gist (business_id WITH =, tstzrange(start_time, end_time) WITH &&)"
+    
+    voice_sessions:
+      description: "Voice interaction logs și transcripts"
+      key_fields:
+        - "id (UUID, primary key)"
+        - "user_id (UUID, FK la auth.users)"
+        - "business_id (UUID, FK, nullable)"
+        - "transcript (TEXT)"
+        - "intent_recognized (TEXT)"
+        - "booking_result (JSONB)"
+        - "session_duration (INTERVAL)"
+        - "created_at (TIMESTAMPTZ)"
+      indexes:
+        - "user_id, created_at"
+        - "business_id, created_at"
+        - "intent_recognized pentru analytics"
+
+optimization_strategies:
+  indexing:
+    time_based_queries:
+      - "CREATE INDEX idx_availability_time_range ON availability_slots USING gist (tstzrange(start_time, end_time))"
+      - "CREATE INDEX idx_bookings_time_range ON bookings USING gist (tstzrange(start_time, end_time))"
+    
+    business_queries:
+      - "CREATE INDEX idx_services_business_active ON services (business_id) WHERE is_active = true"
+      - "CREATE INDEX idx_bookings_business_status ON bookings (business_id, status)"
+    
+    voice_analytics:
+      - "CREATE INDEX idx_voice_sessions_intent ON voice_sessions (intent_recognized) WHERE intent_recognized IS NOT NULL"
+      - "CREATE INDEX idx_voice_sessions_business_date ON voice_sessions (business_id, DATE(created_at))"
+  
+  query_optimization:
+    availability_check: |
+      -- Optimized availability check with exclusion logic
+      SELECT * FROM availability_slots a
+      WHERE a.business_id = $1
+        AND tstzrange(a.start_time, a.end_time) && tstzrange($2, $3)
+        AND NOT EXISTS (
+          SELECT 1 FROM bookings b
+          WHERE b.business_id = $1
+            AND b.status != 'cancelled'
+            AND tstzrange(b.start_time, b.end_time) && tstzrange($2, $3)
+        )
+    
+    conflict_prevention: |
+      -- Atomic booking creation with conflict check
+      INSERT INTO bookings (business_id, service_id, customer_id, start_time, end_time, status)
+      SELECT $1, $2, $3, $4, $5, 'confirmed'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM bookings
+        WHERE business_id = $1
+          AND status != 'cancelled'
+          AND tstzrange(start_time, end_time) && tstzrange($4, $5)
+      )
+
+rls_policies:
+  businesses: |
+    CREATE POLICY "Users can view businesses they own or are public"
+    ON businesses FOR SELECT
+    TO authenticated
+    USING (owner_id = auth.uid() OR is_public = true);
+    
+    CREATE POLICY "Users can modify their own businesses"
+    ON businesses FOR ALL
+    TO authenticated
+    USING (owner_id = auth.uid());
+  
+  bookings: |
+    CREATE POLICY "Users can view their own bookings or business bookings they own"
+    ON bookings FOR SELECT
+    TO authenticated
+    USING (
+      customer_id = auth.uid() OR
+      business_id IN (SELECT id FROM businesses WHERE owner_id = auth.uid())
+    );
+    
+    CREATE POLICY "Users can create bookings"
+    ON bookings FOR INSERT
+    TO authenticated
+    WITH CHECK (customer_id = auth.uid());
+
+real_time_subscriptions:
+  booking_updates: |
+    -- Real-time updates pentru booking changes
+    SELECT * FROM bookings
+    WHERE business_id = $business_id
+      AND start_time >= NOW()
+      AND status IN ('confirmed', 'pending', 'cancelled')
+  
+  availability_changes: |
+    -- Real-time availability updates
+    SELECT * FROM availability_slots
+    WHERE business_id = $business_id
+      AND end_time >= NOW()
+
+performance_monitoring:
+  key_metrics:
+    - "Query execution time pentru availability checks"
+    - "Booking conflict resolution success rate"
+    - "Database connection pool utilization"
+    - "Index usage statistics"
+    - "RLS policy performance impact"
+  
+  slow_query_alerts:
+    - "Queries > 100ms pentru booking operations"
+    - "Full table scans on large tables"
+    - "Deadlock detection și resolution"
+  
+  optimization_targets:
+    - "Availability check < 50ms"
+    - "Booking creation < 100ms"
+    - "Voice session logging < 25ms"
+    - "Real-time subscription latency < 200ms"
+
+migration_strategy:
+  versioning: "Supabase migration files cu timestamp prefix"
+  rollback: "Each migration paired cu down migration"
+  testing: "Migration testing pe staging environment"
+  deployment: "Zero-downtime migrations cu feature flags"
+
+backup_strategy:
+  automated: "Daily Supabase automated backups"
+  manual: "Pre-deployment manual backups"
+  retention: "30 days pentru automated, 90 days pentru manual"
+  restoration: "Point-in-time recovery capability"
+
+integration:
+  triggers:
+    - Schema changes requests
+    - Performance degradation alerts
+    - Data inconsistency reports
+    - Migration deployment needs
+  
+  collaboration:
+    - Works with Performance Optimizer pentru query tuning
+    - Coordinates with Security Auditor pentru RLS policies
+    - Reports to Backend team pentru API integration

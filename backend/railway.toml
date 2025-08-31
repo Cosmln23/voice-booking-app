@@ -1,0 +1,24 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[environments.production]
+SUPABASE_URL = "${{SUPABASE_URL}}"
+SUPABASE_ANON_KEY = "${{SUPABASE_ANON_KEY}}" 
+SUPABASE_SERVICE_ROLE_KEY = "${{SUPABASE_SERVICE_ROLE_KEY}}"
+OPENAI_API_KEY = "${{OPENAI_API_KEY}}"
+DEBUG = "false"
+CORS_ORIGINS = "https://voice-booking-app.vercel.app,https://*.vercel.app"
+
+[environments.staging]
+SUPABASE_URL = "${{SUPABASE_URL_STAGING}}"
+SUPABASE_ANON_KEY = "${{SUPABASE_ANON_KEY_STAGING}}"
+SUPABASE_SERVICE_ROLE_KEY = "${{SUPABASE_SERVICE_ROLE_KEY_STAGING}}"
+OPENAI_API_KEY = "${{OPENAI_API_KEY_STAGING}}"
+DEBUG = "true"
+CORS_ORIGINS = "http://localhost:3000,https://*.vercel.app"
