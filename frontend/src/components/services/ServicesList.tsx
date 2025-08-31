@@ -16,7 +16,7 @@ import {
   Package,
   Zap,
   Heart,
-  Menu
+  Menu,
   Activity,
   Ban
 } from 'lucide-react'

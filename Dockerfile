@@ -1,3 +1,6 @@
+# Railway deployment Dockerfile for backend
+# This file should be in the root directory for Railway to detect
+
 # Use Python 3.11 slim image
 FROM python:3.11-slim
 
@@ -21,7 +24,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy backend application code
 COPY backend/ .
 
 # Create non-root user for security

@@ -18,7 +18,7 @@ class OpenAIVoiceClient:
     """OpenAI client for voice processing and conversation management"""
     
     def __init__(self):
-        self.api_key = settings.OPENAI_API_KEY
+        self.api_key = settings.openai_api_key
         self.model = "gpt-4o-realtime-preview"
         self.voice_model = "whisper-1"
         self.tts_model = "tts-1"

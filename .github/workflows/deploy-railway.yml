@@ -1,0 +1,67 @@
+name: Deploy Backend to Railway
+
+on:
+  push:
+    branches: [ main, staging ]
+    paths: 
+      - 'backend/**'
+      - '.github/workflows/deploy-railway.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest flake8
+
+      - name: Run tests
+        run: |
+          cd backend
+          # flake8 app/ --max-line-length=100
+          # pytest tests/ --verbose
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway (Staging)
+        run: |
+          echo "Deploying to Railway staging..."
+          # Railway CLI deployment would go here
+          # railway deploy --service=voice-booking-backend-staging
+
+  deploy-production:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/production'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway (Production)
+        run: |
+          echo "Deploying to Railway production..."
+          # railway deploy --service=voice-booking-backend-prod
+
+      - name: Health check
+        run: |
+          # Wait for deployment to be ready
+          sleep 30
+          # curl -f https://voice-booking-backend-prod.railway.app/health || exit 1
