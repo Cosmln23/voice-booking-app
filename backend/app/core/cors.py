@@ -58,7 +58,9 @@ def is_allowed_origin(origin: str) -> bool:
         if '*' in allowed:
             # Convert wildcard pattern to regex
             pattern = allowed.replace('*', '[a-zA-Z0-9-]+')
-            pattern = f"^{re.escape(pattern).replace(r'\[a-zA-Z0-9-\]\+', '[a-zA-Z0-9-]+')}$"
+            escaped_pattern = re.escape(pattern)
+            final_pattern = escaped_pattern.replace(r'\[a-zA-Z0-9-\]\+', '[a-zA-Z0-9-]+')
+            pattern = f"^{final_pattern}$"
             
             if re.match(pattern, origin):
                 logger.info(f"Origin {origin} matched wildcard pattern {allowed}")
