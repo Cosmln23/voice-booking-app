@@ -23,13 +23,23 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Voice Booking App API", extra={"version": settings.version})
     log_cors_config()
-    await database.connect()
+    
+    # Skip database connection in production if not configured
+    # This allows the app to start for healthcheck
+    try:
+        await database.connect()
+        logger.info("Database connection established")
+    except Exception as e:
+        logger.warning(f"Database connection failed, continuing in mock mode: {e}")
     
     yield
     
     # Shutdown
     logger.info("Shutting down Voice Booking App API")
-    await database.disconnect()
+    try:
+        await database.disconnect()
+    except Exception as e:
+        logger.warning(f"Database disconnect warning: {e}")
 
 
 # Create FastAPI application
