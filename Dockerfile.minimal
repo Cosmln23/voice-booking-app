@@ -1,20 +1,14 @@
-# Ultra minimal Railway Dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install only essential packages
-RUN pip install fastapi uvicorn requests
+RUN pip install fastapi uvicorn
 
-# Copy minimal health script
 COPY railway_test.py .
 
-# Expose port
 EXPOSE 8000
 
-# Simple health check
 HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
-# Run minimal server
 CMD ["python", "railway_test.py"]
