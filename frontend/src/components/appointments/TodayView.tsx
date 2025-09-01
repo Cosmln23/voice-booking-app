@@ -8,7 +8,7 @@ import {
   Eye,
   Menu
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 
 interface TodayViewProps {
   isMobile?: boolean

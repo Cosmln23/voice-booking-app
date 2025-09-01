@@ -9,7 +9,7 @@ import {
   Mic,
   X 
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 
 interface MobileDrawerProps {
   isOpen: boolean

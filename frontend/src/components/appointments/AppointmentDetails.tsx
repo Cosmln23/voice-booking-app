@@ -13,8 +13,8 @@ import {
   MessageSquare,
   Calendar
 } from 'lucide-react'
-import Badge from '@/components/ui/Badge'
-import { cn } from '@/lib/utils'
+import Badge from '../ui/Badge'
+import { cn } from '../../lib/utils'
 
 interface AppointmentDetailsProps {
   appointmentId: string | null

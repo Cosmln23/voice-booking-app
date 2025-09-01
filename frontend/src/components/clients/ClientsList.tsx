@@ -19,11 +19,11 @@ import {
   Activity,
   Ban
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 import ClientProfile from './ClientProfile'
 import AddClientModal from './AddClientModal'
-import { useClients } from '@/hooks'
-import type { Client as ApiClient, ClientStatus } from '@/types'
+import { useClients } from '../../hooks'
+import type { Client as ApiClient, ClientStatus } from '../../types'
 
 // Extended client interface for component compatibility
 interface Client {

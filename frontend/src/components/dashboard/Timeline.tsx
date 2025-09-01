@@ -1,8 +1,8 @@
 'use client'
 
 import { Calendar as TimelineIcon, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
-import Badge from '@/components/ui/Badge'
-import { cn } from '@/lib/utils'
+import Badge from '../ui/Badge'
+import { cn } from '../../lib/utils'
 
 interface Appointment {
   id: string

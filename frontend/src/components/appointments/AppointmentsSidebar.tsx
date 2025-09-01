@@ -13,7 +13,7 @@ import {
   Settings,
   X
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 import Image from 'next/image'
 
 type PageType = 'dashboard' | 'today' | 'upcoming' | 'pending' | 'archive' | 'clients' | 'services' | 'statistics' | 'agent' | 'settings'

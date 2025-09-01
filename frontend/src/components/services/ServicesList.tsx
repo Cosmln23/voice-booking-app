@@ -20,11 +20,11 @@ import {
   Activity,
   Ban
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
-import { useServices } from '@/hooks'
-import type { Service as ApiService } from '@/types'
+import { useServices } from '../../hooks'
+import type { Service as ApiService } from '../../types'
 
 interface Service {
   id: string

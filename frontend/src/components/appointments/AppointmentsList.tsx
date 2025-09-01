@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calendar, X, Menu, User, Phone, Mail, Clock as ClockIcon, Plus, Ban, LayoutDashboard } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import Badge from '@/components/ui/Badge'
-import { useAppointments } from '@/hooks'
-import type { Appointment, AppointmentStatus } from '@/types'
+import { cn } from '../../lib/utils'
+import Badge from '../ui/Badge'
+import { useAppointments } from '../../hooks'
+import type { Appointment, AppointmentStatus } from '../../types'
 
 // Extended appointment interface with client details for compatibility
 interface AppointmentWithDetails extends Omit<Appointment, 'duration'> {

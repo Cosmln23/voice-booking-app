@@ -15,7 +15,7 @@ import {
   Download,
   Menu
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 
 type TimeInterval = 'week' | 'month' | 'year' | 'custom'
 
