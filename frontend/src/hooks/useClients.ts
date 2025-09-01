@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api } from '../lib/api';
 import type { 
   Client, 
   ClientCreate, 
@@ -12,7 +12,7 @@ import type {
   ClientFilters,
   ClientStats,
   UseClientsReturn 
-} from '@/types';
+} from '../types';
 
 export const useClients = (): UseClientsReturn => {
   const [clients, setClients] = useState<Client[]>([]);

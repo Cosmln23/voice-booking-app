@@ -4,13 +4,13 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api } from '../lib/api';
 import type { 
   DashboardStats, 
   ChartData, 
   StatsPeriod,
   UseStatisticsReturn 
-} from '@/types';
+} from '../types';
 
 export const useStatistics = (): UseStatisticsReturn => {
   const [statistics, setStatistics] = useState<DashboardStats | undefined>();

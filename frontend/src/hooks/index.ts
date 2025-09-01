@@ -15,4 +15,4 @@ export type {
   UseServicesReturn,
   UseStatisticsReturn,
   UseAgentReturn,
-} from '@/types';
+} from '../types';

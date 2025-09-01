@@ -4,14 +4,14 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api } from '../lib/api';
 import type { 
   Appointment, 
   AppointmentCreate, 
   AppointmentUpdate, 
   AppointmentFilters,
   UseAppointmentsReturn 
-} from '@/types';
+} from '../types';
 
 export const useAppointments = (): UseAppointmentsReturn => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);

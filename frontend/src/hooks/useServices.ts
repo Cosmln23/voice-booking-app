@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api } from '../lib/api';
 import type { 
   Service, 
   ServiceCreate, 
@@ -12,7 +12,7 @@ import type {
   ServiceFilters,
   ServiceStats,
   UseServicesReturn 
-} from '@/types';
+} from '../types';
 
 export const useServices = (): UseServicesReturn => {
   const [services, setServices] = useState<Service[]>([]);

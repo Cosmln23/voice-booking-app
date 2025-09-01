@@ -4,12 +4,12 @@
  */
 
 import { useState, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api } from '../lib/api';
 import type { 
   AgentStatusInfo, 
   AgentConfiguration,
   UseAgentReturn 
-} from '@/types';
+} from '../types';
 
 export const useAgent = (): UseAgentReturn => {
   const [status, setStatus] = useState<AgentStatusInfo | undefined>();
