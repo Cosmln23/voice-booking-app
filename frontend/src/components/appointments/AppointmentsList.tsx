@@ -27,16 +27,6 @@ interface AppointmentsListProps {
   onMobileToggle?: () => void
 }
 
-// Extended appointment interface with client details
-interface AppointmentWithDetails extends Appointment {
-  clientPhone?: string
-  clientEmail?: string
-  clientNotes?: string
-  duration?: string
-  price?: string
-  lastVisit?: string
-  preferences?: string[]
-}
 
 const convertedAppointments: AppointmentWithDetails[] = [
   {
@@ -204,21 +194,24 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
   // Convert API appointments to component format for compatibility
   const convertedAppointments: AppointmentWithDetails[] = appointments.map(apt => ({
     id: apt.id,
-    clientName: apt.client_name,
+    client_name: apt.client_name,
+    phone: apt.phone,
     service: apt.service,
+    date: apt.date,
     time: apt.time,
+    duration: apt.duration,
     status: apt.status,
     type: apt.type,
-    preview: apt.notes || `${apt.service} pentru ${apt.client_name}`,
+    priority: apt.priority,
+    notes: apt.notes,
+    price: apt.price,
+    created_at: apt.created_at,
+    updated_at: apt.updated_at,
+    clientName: apt.client_name,
     clientPhone: apt.phone,
     clientEmail: '',
     clientNotes: apt.notes,
-    duration: apt.duration,
-    price: apt.price,
-    date: apt.date,
-    created_at: apt.created_at,
-    updated_at: apt.updated_at,
-    priority: apt.priority
+    preview: apt.notes || `${apt.service} pentru ${apt.client_name}`
   }))
 
   const handleShowClientDetails = (appointment: AppointmentWithDetails) => {
