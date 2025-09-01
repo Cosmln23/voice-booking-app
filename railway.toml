@@ -1,21 +1,18 @@
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
-buildContext = "."
 
 [deploy]
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
 
-[[services]]
-name = "voice-booking-backend"
-
-[services.healthcheck]
-path = "/health"
-timeout = 30
-
-[services.variables]
+[deploy.env]
 PORT = "8000"
-PYTHONUNBUFFERED = "1"
+PYTHONUNBUFFERED = "1"  
 PYTHONDONTWRITEBYTECODE = "1"
+# Production environment variables (set these in Railway dashboard)
+# SUPABASE_URL = "your-supabase-url"
+# SUPABASE_ANON_KEY = "your-supabase-anon-key"  
+# OPENAI_API_KEY = "your-openai-api-key"
