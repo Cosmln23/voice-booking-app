@@ -137,10 +137,13 @@ app.include_router(websocket_router, prefix="", tags=["websockets"])
 
 
 if __name__ == "__main__":
+    import os
+    # Use PORT environment variable if available (Railway sets this)
+    port = int(os.getenv("PORT", settings.port))
     uvicorn.run(
         "app.main:app",
         host=settings.host,
-        port=settings.port,
+        port=port,
         reload=settings.debug,
         log_config=None  # Disable uvicorn logging, use our custom logging
     )
