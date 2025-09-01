@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { 
@@ -13,7 +14,7 @@ import {
   Settings,
   X
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 import Image from 'next/image'
 
 type PageType = 'dashboard' | 'today' | 'upcoming' | 'pending' | 'archive' | 'clients' | 'services' | 'statistics' | 'agent' | 'settings'
@@ -43,7 +44,7 @@ interface AppointmentsSidebarProps {
 
 export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentPage = 'dashboard', onPageChange }: AppointmentsSidebarProps) {
   return (
-    <div className={cn(
+    <div className={clsx(
       "bg-card border-border flex flex-col",
       isMobile ? "w-full h-full" : "w-64 border-r"
     )}>
@@ -72,7 +73,7 @@ export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentP
             <button
               key={item.name}
               onClick={() => onPageChange?.(item.page)}
-              className={cn(
+              className={clsx(
                 'flex items-center w-full px-3 py-2 rounded-2xl group transition-colors',
                 currentPage === item.page
                   ? 'bg-secondary/10 text-primary border border-border'
@@ -82,7 +83,7 @@ export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentP
               <item.icon className="h-5 w-5 mr-3" />
               <span>{item.name}</span>
               {item.count && (
-                <span className={cn(
+                <span className={clsx(
                   'ml-auto rounded-full px-2 py-0.5 text-xs',
                   currentPage === item.page
                     ? 'bg-secondary/20 text-primary'
@@ -105,7 +106,7 @@ export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentP
               <button
                 key={item.name}
                 onClick={() => onPageChange?.(item.page)}
-                className={cn(
+                className={clsx(
                   "flex items-center w-full px-3 py-2 text-sm rounded-2xl transition-colors",
                   currentPage === item.page
                     ? 'bg-secondary/10 text-primary border border-border'

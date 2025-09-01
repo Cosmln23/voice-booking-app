@@ -1,6 +1,7 @@
+import { clsx } from "clsx"
 'use client'
 
-import { cn } from '../../lib/utils'
+
 import { ReactNode } from 'react'
 
 interface KPICardProps {
@@ -30,7 +31,7 @@ export default function KPICard({
 }: KPICardProps) {
   return (
     <div 
-      className={cn(
+      className={clsx(
         'group relative overflow-hidden rounded-lg bg-card border border-border p-4 hover:border-border-hover hover:bg-card-hover transition-colors min-w-[260px] md:min-w-0 snap-start',
         className
       )}
@@ -54,7 +55,7 @@ export default function KPICard({
             <div className="text-xs text-secondary mt-1">{subtitle}</div>
           )}
           {trend && (
-            <div className={cn(
+            <div className={clsx(
               'text-xs mt-1 inline-flex items-center gap-1',
               trend.direction === 'up' ? 'text-accent' : 'text-red-400'
             )}>

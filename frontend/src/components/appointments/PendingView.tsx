@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import {
@@ -9,7 +10,7 @@ import {
   XCircle,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface PendingViewProps {
   isMobile?: boolean
@@ -83,7 +84,7 @@ export default function PendingView({ isMobile, onMobileToggle }: PendingViewPro
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[priority as keyof typeof styles] || 'bg-secondary/20 text-secondary border-border'
       )}>

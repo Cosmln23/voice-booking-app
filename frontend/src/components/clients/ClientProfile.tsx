@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -20,7 +21,7 @@ import {
   MessageSquare,
   PhoneCall
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface Client {
   id: string
@@ -119,7 +120,7 @@ export default function ClientProfile({ client, onClose }: ClientProfileProps) {
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-3 py-1 rounded-2xl text-sm font-medium border',
         styles[status]
       )}>
@@ -144,7 +145,7 @@ export default function ClientProfile({ client, onClose }: ClientProfileProps) {
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium',
         styles[status]
       )}>
@@ -217,7 +218,7 @@ export default function ClientProfile({ client, onClose }: ClientProfileProps) {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={cn(
+                className={clsx(
                   'flex items-center gap-2 py-3 border-b-2 transition-colors',
                   activeTab === tab.key
                     ? 'border-accent text-accent'
@@ -253,7 +254,7 @@ export default function ClientProfile({ client, onClose }: ClientProfileProps) {
                     </div>
                     <div className="flex items-center gap-3">
                       <Shield className="w-4 h-4 text-secondary" />
-                      <span className={cn('text-sm', client.gdprConsent ? 'text-primary' : 'text-secondary')}>
+                      <span className={clsx('text-sm', client.gdprConsent ? 'text-primary' : 'text-secondary')}>
                         GDPR: {client.gdprConsent ? 'Consimțământ activ' : 'Lipsă consimțământ'}
                       </span>
                     </div>
@@ -297,7 +298,7 @@ export default function ClientProfile({ client, onClose }: ClientProfileProps) {
                 </div>
 
                 <div className="bg-background rounded-2xl p-4 border border-border text-center">
-                  <AlertTriangle className={cn("w-8 h-8 mx-auto mb-2", client.noShows && client.noShows > 0 ? 'text-secondary' : 'text-primary')} />
+                  <AlertTriangle className={clsx("w-8 h-8 mx-auto mb-2", client.noShows && client.noShows > 0 ? 'text-secondary' : 'text-primary')} />
                   <div className="text-2xl font-bold text-primary">{client.noShows || 0}</div>
                   <div className="text-sm text-secondary">Absențe (No-Show)</div>
                 </div>

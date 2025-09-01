@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -20,7 +21,7 @@ import {
   Activity,
   Ban
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
@@ -211,7 +212,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[status]
       )}>
@@ -280,7 +281,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
           <div className="flex gap-2">
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(
+              className={clsx(
                 "flex items-center px-4 py-2 rounded-2xl transition-colors border",
                 showFilters 
                   ? 'bg-secondary/20 text-primary border-border' 

@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -26,7 +27,7 @@ import {
   Search,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface CallLog {
   id: string
@@ -160,7 +161,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[result]
       )}>
@@ -214,7 +215,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={cn(
+              className={clsx(
                 'flex items-center gap-2 py-3 border-b-2 transition-colors',
                 activeTab === tab.key
                   ? 'border-secondary text-primary'
@@ -350,7 +351,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   <div className="flex gap-2">
                     <button
                       onClick={() => setVoiceGender('female')}
-                      className={cn(
+                      className={clsx(
                         'px-4 py-2 rounded-2xl border transition-colors',
                         voiceGender === 'female'
                           ? 'bg-secondary/20 text-primary border-border'
@@ -361,7 +362,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                     </button>
                     <button
                       onClick={() => setVoiceGender('male')}
-                      className={cn(
+                      className={clsx(
                         'px-4 py-2 rounded-2xl border transition-colors',
                         voiceGender === 'male'
                           ? 'bg-secondary/20 text-primary border-border'

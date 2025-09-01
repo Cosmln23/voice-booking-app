@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -17,7 +18,7 @@ import {
   ToggleRight,
   AlertCircle
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface Service {
   id: string
@@ -77,7 +78,7 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
         <div className="p-6 border-b border-border">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className={cn(
+              <div className={clsx(
                 "w-16 h-16 rounded-full flex items-center justify-center",
                 getCategoryColor(service.category)
               )}>
@@ -106,7 +107,7 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                     <DollarSign className="w-4 h-4" />
                     {service.price}
                   </span>
-                  <span className={cn(
+                  <span className={clsx(
                     "inline-flex items-center px-2 py-1 rounded-2xl text-xs border",
                     service.status === 'Activ' 
                       ? 'bg-secondary/20 text-primary border-border'
@@ -145,7 +146,7 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={cn(
+                className={clsx(
                   'flex items-center gap-2 py-3 border-b-2 transition-colors',
                   activeTab === tab.key
                     ? 'border-secondary text-primary'
@@ -282,7 +283,7 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                 </h3>
                 <div className="p-3 bg-card rounded-2xl">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className={cn(
+                    <div className={clsx(
                       "w-8 h-8 rounded-full flex items-center justify-center",
                       getCategoryColor(service.category)
                     )}>

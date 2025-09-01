@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { 
@@ -14,7 +15,7 @@ import {
   Calendar
 } from 'lucide-react'
 import Badge from '../ui/Badge'
-import { cn } from '../../lib/utils'
+
 
 interface AppointmentDetailsProps {
   appointmentId: string | null

@@ -1,4 +1,5 @@
-import { cn } from '../../../lib/utils'
+import { clsx } from "clsx"
+
 
 interface BadgeProps {
   variant: 'success' | 'warning' | 'error' | 'info' | 'neutral'
@@ -16,7 +17,7 @@ const badgeVariants = {
 
 export default function Badge({ variant, children, className }: BadgeProps) {
   return (
-    <span className={cn(
+    <span className={clsx(
       'inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-2xl border',
       badgeVariants[variant],
       className

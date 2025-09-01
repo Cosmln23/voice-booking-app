@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { 
@@ -11,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 import Image from 'next/image'
 
 const navigation = [
@@ -30,7 +31,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   return (
-    <aside className={cn(
+    <aside className={clsx(
       "hidden md:flex md:flex-col md:w-72 md:shrink-0 relative",
       "border-r border-border bg-card backdrop-blur-lg",
       "transition-transform duration-300 ease-in-out",
@@ -53,14 +54,14 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           <a
             key={item.name}
             href={item.href}
-            className={cn(
+            className={clsx(
               'group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium border transition-colors',
               item.current
                 ? 'bg-card-hover border-border hover:border-border-hover'
                 : 'text-secondary hover:text-primary hover:bg-card-hover border-transparent hover:border-border'
             )}
           >
-            <item.icon className={cn(
+            <item.icon className={clsx(
               'w-4.5 h-4.5',
               item.current ? 'text-accent' : ''
             )} />
@@ -95,7 +96,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className={cn(
+        className={clsx(
           "absolute top-1/2 -translate-y-1/2 -right-3 z-50",
           "w-6 h-6 rounded-full bg-card border border-border",
           "flex items-center justify-center",

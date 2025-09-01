@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import {
@@ -8,7 +9,7 @@ import {
   Eye,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface UpcomingViewProps {
   isMobile?: boolean

@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -26,7 +27,7 @@ import {
   Crown,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface BusinessHours {
   [key: string]: {
@@ -144,7 +145,7 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[role]
       )}>
@@ -195,7 +196,7 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={cn(
+              className={clsx(
                 'flex items-center gap-2 py-3 border-b-2 transition-colors whitespace-nowrap',
                 activeTab === tab.key
                   ? 'border-secondary text-primary'
@@ -646,7 +647,7 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
                           </div>
                           <div>
                             <div className="font-medium text-primary">{user.name}</div>
-                            <div className={cn(
+                            <div className={clsx(
                               "text-xs",
                               user.status === 'active' ? 'text-primary' : 'text-secondary'
                             )}>
@@ -761,7 +762,7 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
                         <span className="font-semibold text-primary">{bill.amount}</span>
                       </div>
                       <div className="col-span-3">
-                        <span className={cn(
+                        <span className={clsx(
                           "inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border",
                           bill.status === 'paid' 
                             ? 'bg-secondary/20 text-primary border-border'

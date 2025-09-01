@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -13,7 +14,7 @@ import {
   Save,
   AlertCircle
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface ClientFormData {
   name: string
@@ -119,7 +120,7 @@ export default function AddClientModal({ onClose, onSave }: AddClientModalProps)
                       type="text"
                       value={formData.name}
                       onChange={(e) => updateFormData('name', e.target.value)}
-                      className={cn(
+                      className={clsx(
                         'w-full pl-10 pr-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors',
                         errors.name ? 'border-red-500' : 'border-border'
                       )}
@@ -145,7 +146,7 @@ export default function AddClientModal({ onClose, onSave }: AddClientModalProps)
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => updateFormData('phone', e.target.value)}
-                      className={cn(
+                      className={clsx(
                         'w-full pl-10 pr-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors',
                         errors.phone ? 'border-red-500' : 'border-border'
                       )}
@@ -171,7 +172,7 @@ export default function AddClientModal({ onClose, onSave }: AddClientModalProps)
                       type="email"
                       value={formData.email}
                       onChange={(e) => updateFormData('email', e.target.value)}
-                      className={cn(
+                      className={clsx(
                         'w-full pl-10 pr-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors',
                         errors.email ? 'border-red-500' : 'border-border'
                       )}

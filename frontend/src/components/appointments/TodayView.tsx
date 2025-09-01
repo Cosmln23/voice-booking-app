@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import {
@@ -8,7 +9,7 @@ import {
   Eye,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface TodayViewProps {
   isMobile?: boolean
@@ -69,7 +70,7 @@ export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) 
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[status as keyof typeof styles] || 'bg-secondary/20 text-secondary border-border'
       )}>

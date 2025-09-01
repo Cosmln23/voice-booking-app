@@ -1,8 +1,9 @@
+import { clsx } from "clsx"
 'use client'
 
 import { Calendar as TimelineIcon, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react'
 import Badge from '../ui/Badge'
-import { cn } from '../../lib/utils'
+
 
 interface Appointment {
   id: string
@@ -85,7 +86,7 @@ const StatusDot = ({ status, className }: { status: string, className?: string }
   }
   
   return (
-    <div className={cn(
+    <div className={clsx(
       'absolute -left-[18px] top-3 w-2 h-2 rounded-full ring-2 ring-background',
       colors[status as keyof typeof colors],
       className
@@ -114,7 +115,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
     }
   }
 
-  const cardClasses = cn(
+  const cardClasses = clsx(
     'flex items-center justify-between rounded-md border border-border p-3 transition',
     appointment.isNext || appointment.isCurrent 
       ? 'border-accent/40 bg-accent/5 ring-2 ring-accent/20' 
@@ -126,20 +127,20 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
       <StatusDot status={appointment.status} />
       <div className={cardClasses}>
         <div className="flex items-center gap-3">
-          <span className={cn(
+          <span className={clsx(
             'text-xs w-14 md:w-16',
             appointment.isNext || appointment.isCurrent ? 'text-accent' : 'text-secondary'
           )}>
             {appointment.time}
           </span>
           <div className="flex flex-col">
-            <div className={cn(
+            <div className={clsx(
               'text-sm font-medium',
               appointment.isCurrent ? 'text-primary' : appointment.isNext ? 'text-primary' : 'text-primary'
             )}>
               {appointment.clientName}
             </div>
-            <div className={cn(
+            <div className={clsx(
               'text-xs',
               appointment.isNext || appointment.isCurrent ? 'text-secondary' : 'text-secondary'
             )}>

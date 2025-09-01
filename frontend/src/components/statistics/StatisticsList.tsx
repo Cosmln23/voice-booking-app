@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -15,7 +16,7 @@ import {
   Download,
   Menu
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 type TimeInterval = 'week' | 'month' | 'year' | 'custom'
 
@@ -125,7 +126,7 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
               <button
                 key={interval}
                 onClick={() => setSelectedInterval(interval)}
-                className={cn(
+                className={clsx(
                   'px-4 py-2 rounded-2xl border transition-colors',
                   selectedInterval === interval
                     ? 'bg-secondary/20 text-primary border-border'
@@ -137,7 +138,7 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
             ))}
             <button
               onClick={() => setSelectedInterval('custom')}
-              className={cn(
+              className={clsx(
                 'px-4 py-2 rounded-2xl border transition-colors',
                 selectedInterval === 'custom'
                   ? 'bg-secondary/20 text-primary border-border'
@@ -255,13 +256,13 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
                 {mockOperationalData.heatmapData.map((row, index) => (
                   <div key={index} className="grid grid-cols-8 gap-1">
                     <div className="text-xs text-secondary text-right pr-2">{row.hour}</div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.mon))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.tue))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.wed))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.thu))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.fri))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.sat))}></div>
-                    <div className={cn('h-6 rounded border border-border', getHeatmapIntensity(row.sun))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.mon))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.tue))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.wed))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.thu))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.fri))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.sat))}></div>
+                    <div className={clsx('h-6 rounded border border-border', getHeatmapIntensity(row.sun))}></div>
                   </div>
                 ))}
               </div>

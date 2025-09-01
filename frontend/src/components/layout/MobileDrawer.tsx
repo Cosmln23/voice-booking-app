@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { 
@@ -9,7 +10,7 @@ import {
   Mic,
   X 
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface MobileDrawerProps {
   isOpen: boolean
@@ -55,7 +56,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             <a
               key={item.name}
               href={item.href}
-              className={cn(
+              className={clsx(
                 'flex items-center gap-3 px-3 py-2 rounded-2xl text-sm border transition-colors',
                 item.current
                   ? 'bg-card-hover border-border'
@@ -63,7 +64,7 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
               )}
               onClick={onClose}
             >
-              <item.icon className={cn(
+              <item.icon className={clsx(
                 'w-4.5 h-4.5',
                 item.current ? 'text-primary' : ''
               )} />

@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -19,7 +20,7 @@ import {
   Activity,
   Ban
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 import ClientProfile from './ClientProfile'
 import AddClientModal from './AddClientModal'
 import { useClients } from '../../hooks'
@@ -239,7 +240,7 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
     }
     
     return (
-      <span className={cn(
+      <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
         styles[status]
       )}>
@@ -303,7 +304,7 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
           <div className="flex gap-2">
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className={cn(
+              className={clsx(
                 "flex items-center px-4 py-2 rounded-2xl transition-colors border",
                 showFilters 
                   ? 'bg-accent text-white border-accent' 

@@ -1,3 +1,4 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState } from 'react'
@@ -13,7 +14,7 @@ import {
   Plus,
   Trash2
 } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 
 interface ServiceFormData {
   name: string
@@ -173,7 +174,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
                     type="text"
                     value={formData.name}
                     onChange={(e) => updateFormData('name', e.target.value)}
-                    className={cn(
+                    className={clsx(
                       'w-full px-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors',
                       errors.name ? 'border-red-500' : 'border-border'
                     )}
@@ -228,7 +229,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
                     value={formData.description}
                     onChange={(e) => updateFormData('description', e.target.value)}
                     rows={3}
-                    className={cn(
+                    className={clsx(
                       'w-full px-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors resize-none',
                       errors.description ? 'border-red-500' : 'border-border'
                     )}
@@ -263,7 +264,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
                     step="5"
                     value={formData.serviceDuration}
                     onChange={(e) => updateFormData('serviceDuration', parseInt(e.target.value) || 0)}
-                    className={cn(
+                    className={clsx(
                       'w-full px-4 py-2 bg-background border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors',
                       errors.serviceDuration ? 'border-red-500' : 'border-border'
                     )}
@@ -288,7 +289,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
                     step="5"
                     value={formData.bufferTime}
                     onChange={(e) => updateFormData('bufferTime', parseInt(e.target.value) || 0)}
-                    className={cn(
+                    className={clsx(
                       'w-full px-4 py-2 bg-background border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors',
                       errors.bufferTime ? 'border-red-500' : 'border-border'
                     )}
@@ -323,7 +324,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
                     type="text"
                     value={formData.price}
                     onChange={(e) => updateFormData('price', e.target.value)}
-                    className={cn(
+                    className={clsx(
                       'w-full px-4 py-2 bg-background border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors',
                       errors.price ? 'border-red-500' : 'border-border'
                     )}

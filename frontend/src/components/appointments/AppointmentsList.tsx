@@ -1,8 +1,9 @@
+import { clsx } from "clsx"
 'use client'
 
 import { useState, useEffect } from 'react'
 import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calendar, X, Menu, User, Phone, Mail, Clock as ClockIcon, Plus, Ban, LayoutDashboard } from 'lucide-react'
-import { cn } from '../../lib/utils'
+
 import Badge from '../ui/Badge'
 import { useAppointments } from '../../hooks'
 import type { Appointment, AppointmentStatus } from '../../types'
@@ -235,7 +236,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
   }
 
   return (
-    <div className={cn(
+    <div className={clsx(
       "flex flex-col bg-card",
       isMobile ? "w-full h-full" : "flex-1 border-r border-border"
     )}>
@@ -344,7 +345,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
             <div
               key={appointment.id}
               onClick={() => onSelectAppointment(appointment.id)}
-              className={cn(
+              className={clsx(
                 'border-b border-border px-4 py-3 cursor-pointer transition-colors relative',
                 selectedAppointment === appointment.id
                   ? 'bg-secondary/10 border-l-2 border-l-secondary'
@@ -361,7 +362,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
             )}
             
             {/* Timeline Dot */}
-            <div className={cn(
+            <div className={clsx(
               "absolute left-[22px] top-4 w-3 h-3 rounded-full border-2 border-card z-10",
               isNextClient ? 'bg-accent border-accent animate-pulse' :
               appointment.status === 'completed' ? 'bg-secondary' :
@@ -436,7 +437,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                 return (
                   <button
                     key={i}
-                    className={cn(
+                    className={clsx(
                       "text-sm p-2 rounded-2xl transition-colors",
                       isCurrentDay 
                         ? "bg-primary text-background font-medium" 
