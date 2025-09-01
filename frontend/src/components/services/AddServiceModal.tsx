@@ -29,6 +29,18 @@ interface ServiceFormData {
   packageItems: string[]
 }
 
+interface ServiceFormErrors {
+  name?: string
+  category?: string
+  description?: string
+  serviceDuration?: string
+  bufferTime?: string
+  price?: string
+  status?: string
+  isPackage?: string
+  packageItems?: string
+}
+
 interface AddServiceModalProps {
   onClose: () => void
   onSave: (serviceData: ServiceFormData) => void
@@ -47,7 +59,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
     packageItems: []
   })
   
-  const [errors, setErrors] = useState<Partial<ServiceFormData>>({})
+  const [errors, setErrors] = useState<ServiceFormErrors>({})
   const [newPackageItem, setNewPackageItem] = useState('')
 
   const availableServices = [
@@ -60,7 +72,7 @@ export default function AddServiceModal({ onClose, onSave }: AddServiceModalProp
   ]
 
   const validateForm = () => {
-    const newErrors: Partial<ServiceFormData> = {}
+    const newErrors: ServiceFormErrors = {}
     
     if (!formData.name.trim()) {
       newErrors.name = 'Numele serviciului este obligatoriu'

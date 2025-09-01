@@ -7,13 +7,12 @@ import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calenda
 
 import Badge from '../ui/Badge'
 import { useAppointments } from '../../hooks'
-import type { Appointment, AppointmentStatus } from '../../types'
+import type { Appointment, AppointmentStatus, AppointmentType, AppointmentPriority } from '../../types'
 
 // Extended appointment interface with client details for compatibility
-interface AppointmentWithDetails extends Omit<Appointment, 'duration'> {
-  duration?: string
+interface AppointmentWithDetails extends Appointment {
   clientName?: string
-  clientPhone?: string
+  clientPhone?: string  
   clientEmail?: string
   clientNotes?: string
   lastVisit?: string
@@ -42,83 +41,113 @@ interface AppointmentWithDetails extends Appointment {
 const convertedAppointments: AppointmentWithDetails[] = [
   {
     id: '5',
-    clientName: 'Mihai Georgescu',
+    client_name: 'Mihai Georgescu',
+    phone: '+40 744 555 123',
     service: 'Tuns + Spălat',
+    date: '2024-09-01',
     time: '08:00',
-    status: 'completed',
-    type: 'voice',
+    duration: '40 min',
+    status: 'completed' as AppointmentStatus,
+    type: 'voice' as const,
+    priority: 'normal' as const,
+    clientName: 'Mihai Georgescu',
     preview: 'Serviciu complet finalizat. Client mulțumit, programare următoare în 3 săptămâni.',
     clientPhone: '+40 744 555 123',
     clientEmail: 'mihai.georgescu@email.com',
-    duration: '40 min',
     price: '55 RON',
     lastVisit: '11 Octombrie 2024',
     clientNotes: 'Client fidel, vine regulat la 3 săptămâni.',
-    preferences: ['Tuns clasic', 'Spălat cu șampon anti-mătreață', 'Styling minimal']
+    preferences: ['Tuns clasic', 'Spălat cu șampon anti-mătreață', 'Styling minimal'],
+    created_at: '2024-08-15T08:00:00Z',
+    updated_at: '2024-09-01T08:00:00Z'
   },
   {
     id: '1',
-    clientName: 'Ion Popescu',
+    client_name: 'Ion Popescu',
+    phone: '+40 123 456 789',
     service: 'Tuns + Barbă',
+    date: '2024-09-01',
     time: '10:30',
-    status: 'completed',
-    type: 'voice',
+    duration: '45 min',
+    status: 'completed' as AppointmentStatus,
+    type: 'voice' as AppointmentType,
+    priority: 'normal' as AppointmentPriority,
+    clientName: 'Ion Popescu',
     preview: 'Programare finalizată pentru tuns și aranjat barbă. Client obișnuit, preferințe cunoscute.',
     clientPhone: '+40 123 456 789',
     clientEmail: 'ion.popescu@email.com',
-    duration: '45 min',
     price: '85 RON',
     lastVisit: '15 Aprilie 2024',
     clientNotes: 'Client obișnuit, preferă tunsoarea scurtă pe lateral și barbă aranjată clasic.',
-    preferences: ['Tunsoare scurtă', 'Barbă îngrijită', 'Fără gel']
+    preferences: ['Tunsoare scurtă', 'Barbă îngrijită', 'Fără gel'],
+    created_at: '2024-08-20T10:30:00Z',
+    updated_at: '2024-09-01T10:30:00Z'
   },
   {
     id: '2',
-    clientName: 'Maria Ionescu',
+    client_name: 'Maria Ionescu',
+    phone: '+40 987 654 321',
     service: 'Tuns + Vopsit',
+    date: '2024-09-01',
     time: '11:15',
-    status: 'in-progress',
-    type: 'voice',
+    duration: '2 ore',
+    status: 'in-progress' as AppointmentStatus,
+    type: 'voice' as AppointmentType,
+    priority: 'normal' as AppointmentPriority,
+    clientName: 'Maria Ionescu',
     preview: 'În desfășurare - tuns complet și vopsire cu nuanța preferată. Estimat 2 ore.',
     clientPhone: '+40 987 654 321',
     clientEmail: 'maria.ionescu@email.com',
-    duration: '2 ore',
     price: '180 RON',
     lastVisit: '8 Martie 2024',
     clientNotes: 'Preferă culori naturale, are părul sensibil.',
-    preferences: ['Culori naturale', 'Tratamente hidratante', 'Fără amoniac']
+    preferences: ['Culori naturale', 'Tratamente hidratante', 'Fără amoniac'],
+    created_at: '2024-08-25T11:15:00Z',
+    updated_at: '2024-09-01T11:15:00Z'
   },
   {
     id: '3',
-    clientName: 'Alexandru Marin',
+    client_name: 'Alexandru Marin',
+    phone: '+40 755 123 456',
     service: 'Tuns simplu',
+    date: '2024-09-01',
     time: '14:00',
-    status: 'confirmed',
-    type: 'manual',
+    duration: '30 min',
+    status: 'confirmed' as AppointmentStatus,
+    type: 'manual' as AppointmentType,
+    priority: 'normal' as AppointmentPriority,
+    clientName: 'Alexandru Marin',
     preview: 'Următorul client - programare confirmată. Client nou, fără istoric anterior.',
     clientPhone: '+40 755 123 456',
     clientEmail: 'alex.marin@email.com',
-    duration: '30 min',
     price: '45 RON',
-    lastVisit: null,
+    lastVisit: 'Prima vizită',
     clientNotes: 'Client nou, prima vizită.',
-    preferences: []
+    preferences: [],
+    created_at: '2024-08-30T14:00:00Z',
+    updated_at: '2024-09-01T14:00:00Z'
   },
   {
     id: '4',
-    clientName: 'Elena Vasile',
+    client_name: 'Elena Vasile',
+    phone: '+40 731 987 654',
     service: 'Coafură ocazie',
+    date: '2024-09-01',
     time: '16:30',
-    status: 'confirmed',
-    type: 'voice',
+    duration: '90 min',
+    status: 'confirmed' as AppointmentStatus,
+    type: 'voice' as AppointmentType,
+    priority: 'normal' as AppointmentPriority,
+    clientName: 'Elena Vasile',
     preview: 'Coafură pentru eveniment special. Discutat modelul preferat și accesoriile necesare.',
     clientPhone: '+40 731 987 654',
     clientEmail: 'elena.vasile@email.com',
-    duration: '90 min',
     price: '150 RON',
     lastVisit: '20 Septembrie 2024',
     clientNotes: 'Preferă coafuri elegante pentru evenimente. Are părul lung și des.',
-    preferences: ['Coafuri elegante', 'Fixativ puternic', 'Accesorii florale']
+    preferences: ['Coafuri elegante', 'Fixativ puternic', 'Accesorii florale'],
+    created_at: '2024-08-28T16:30:00Z',
+    updated_at: '2024-09-01T16:30:00Z'
   },
 ]
 
