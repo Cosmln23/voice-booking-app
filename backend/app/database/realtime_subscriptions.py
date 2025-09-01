@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Callable, Any, Optional
+from typing import Dict, Callable, Any, Optional, List
 from supabase import Client
 from app.core.logging import get_logger
 
