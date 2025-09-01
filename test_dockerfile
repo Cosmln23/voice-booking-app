@@ -1,0 +1,20 @@
+# Minimal test Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install only essential packages
+RUN pip install fastapi uvicorn
+
+# Copy simple health script
+COPY backend/app/simple_health.py .
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run simple server
+CMD ["python", "simple_health.py"]
