@@ -1,5 +1,6 @@
-import { clsx } from "clsx"
 'use client'
+
+import { clsx } from "clsx"
 
 import { useState, useEffect } from 'react'
 import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calendar, X, Menu, User, Phone, Mail, Clock as ClockIcon, Plus, Ban, LayoutDashboard } from 'lucide-react'
