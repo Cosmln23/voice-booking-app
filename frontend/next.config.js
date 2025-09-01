@@ -9,6 +9,17 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Ensure proper path resolution for Vercel
+  experimental: {
+    esmExternals: false,
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': './src',
+    };
+    return config;
+  },
 }
 
 module.exports = nextConfig
