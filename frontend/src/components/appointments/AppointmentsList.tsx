@@ -1,6 +1,6 @@
 'use client'
 
-import { clsx } from "clsx"
+import clsx from "clsx"
 
 import { useState, useEffect } from 'react'
 import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calendar, X, Menu, User, Phone, Mail, Clock as ClockIcon, Plus, Ban, LayoutDashboard } from 'lucide-react'
@@ -9,7 +9,7 @@ import Badge from '../ui/Badge'
 import { useAppointments } from '../../hooks'
 import type { Appointment, AppointmentStatus, AppointmentType, AppointmentPriority } from '../../types'
 
-// Extended appointment interface with client details for compatibility
+// Extended appointment interface with client details for compatibility  
 interface AppointmentWithDetails extends Appointment {
   clientName?: string
   clientPhone?: string  

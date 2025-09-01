@@ -1,4 +1,4 @@
-import { clsx } from "clsx"
+import clsx from "clsx"
 'use client'
 
 import { Calendar as TimelineIcon, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react'

@@ -1,4 +1,4 @@
-import { clsx } from "clsx"
+import clsx from "clsx"
 'use client'
 
 import { useEffect, useRef } from 'react'
