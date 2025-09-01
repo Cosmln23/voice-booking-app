@@ -199,7 +199,7 @@ export default function AppointmentDetails({ appointmentId }: AppointmentDetails
               Transcriere Conversație Vocală
             </h3>
             <div className="bg-secondary/10 border border-border rounded-lg p-4">
-              <p className="text-primary italic leading-relaxed">"{appointment.voiceTranscript}"</p>
+              <p className="text-primary italic leading-relaxed">&quot;{appointment.voiceTranscript}&quot;</p>
             </div>
           </div>
         )}

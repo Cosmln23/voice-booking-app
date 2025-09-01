@@ -79,7 +79,7 @@ const ActivityItem = ({ activity }: { activity: VoiceActivity }) => {
             {activity.intent ? (
               <>
                 <span className="ml-2 text-primary">Intenție:</span>
-                <span className="text-secondary"> "{activity.intent}"</span>
+                <span className="text-secondary"> &quot;{activity.intent}&quot;</span>
               </>
             ) : (
               <>

@@ -499,7 +499,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 {dictionary.map((item, index) => (
                   <div key={index} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors">
                     <div className="col-span-4">
-                      <span className="font-medium text-primary">"{item.clientTerm}"</span>
+                      <span className="font-medium text-primary">&quot;{item.clientTerm}&quot;</span>
                     </div>
                     <div className="col-span-4">
                       <span className="text-primary">{item.officialService}</span>
