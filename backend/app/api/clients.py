@@ -1,13 +1,15 @@
 from datetime import datetime
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from uuid import uuid4
+from postgrest import APIError
 
 from app.models.client import (
     Client, ClientCreate, ClientUpdate, ClientResponse,
     ClientListResponse, ClientStats, ClientStatus
 )
 from app.core.logging import get_logger
+from app.database import get_database
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -155,32 +157,44 @@ async def get_clients(
         raise HTTPException(status_code=500, detail="Failed to retrieve clients")
 
 
+def _get_write_client(request: Request):
+    """Get Supabase client for write operations"""
+    return (getattr(request.app.state, "sb_service", None) or 
+            getattr(request.app.state, "sb_anon", None))
+
+
 @router.post("/clients", response_model=ClientResponse)
-async def create_client(client_data: ClientCreate):
-    """Create a new client"""
+async def create_client(client_data: ClientCreate, request: Request):
+    """Create a new client using Supabase"""
+    sb_client = _get_write_client(request)
+    
+    if not sb_client:
+        logger.error("No Supabase client available")
+        raise HTTPException(status_code=503, detail="Database service unavailable")
+    
     try:
-        # Generate avatar initials
-        name_parts = client_data.name.split()
-        avatar = "".join([part[0].upper() for part in name_parts[:2]])
-        
-        # Create new client
-        new_client = {
-            "id": str(uuid4()),
-            "avatar": avatar,
-            "total_appointments": 0,
-            "last_appointment": None,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            **client_data.model_dump()
+        # Prepare client data for insertion
+        new_client_data = {
+            "name": client_data.name,
+            "phone": client_data.phone,
+            "email": client_data.email,
+            "status": client_data.status.value if client_data.status else "active",
+            "notes": client_data.notes
         }
         
-        # Add to mock data
-        MOCK_CLIENTS.append(new_client)
+        # Insert into Supabase
+        response = sb_client.table("clients").insert(new_client_data).execute()
         
-        client_obj = Client(**new_client)
+        if not response.data:
+            raise HTTPException(status_code=500, detail="Failed to create client - no data returned")
         
-        logger.info(f"Created client {client_obj.id}: {client_obj.name}",
-                   extra={"client_id": client_obj.id, "name": client_obj.name})
+        created_client = response.data[0]
+        
+        logger.info(f"Created client {created_client['id']}: {created_client['name']}",
+                   extra={"client_id": created_client['id'], "name": created_client['name']})
+        
+        # Convert to Client model
+        client_obj = Client(**created_client)
         
         return ClientResponse(
             success=True,
@@ -188,9 +202,25 @@ async def create_client(client_data: ClientCreate):
             message="Client created successfully"
         )
         
+    except APIError as e:
+        # PostgREST/Supabase specific errors
+        error_msg = getattr(e, 'message', str(e))
+        status_code = getattr(getattr(e, 'response', None), 'status_code', 400)
+        
+        logger.error(f"Supabase error creating client: {error_msg}", 
+                    extra={"status_code": status_code})
+        
+        # Map common error codes
+        if status_code == 409:
+            raise HTTPException(status_code=409, detail=f"Conflict: {error_msg}")
+        elif status_code == 422:
+            raise HTTPException(status_code=422, detail=f"Validation error: {error_msg}")
+        else:
+            raise HTTPException(status_code=status_code, detail=f"Database error: {error_msg}")
+            
     except Exception as e:
         logger.error(f"Failed to create client: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to create client")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.put("/clients/{client_id}", response_model=ClientResponse)

@@ -7,7 +7,7 @@ import uvicorn
 from app.core.config import settings
 from app.core.logging import setup_logging, get_logger
 from app.core.cors import get_cors_config, log_cors_config
-from app.database import database
+from app.core.bootstrap import make_supabase_clients, test_supabase_connection
 from app.api import appointments, clients, services, statistics, agent, business_settings
 from app.api.endpoints import voice
 from app.websockets.endpoints import router as websocket_router
@@ -23,11 +23,27 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Voice Booking App API...")
     
+    # Initialize app state
+    app.state.ready = False
+    app.state.sb_anon = None
+    app.state.sb_service = None
+    app.state.db_connected = False
+    
     try:
-        # Initialize database connection
-        logger.info("Initializing database connection...")
-        await database.connect()
-        logger.info("✅ Database connected successfully")
+        # Initialize Supabase clients
+        logger.info("Initializing Supabase clients...")
+        app.state.sb_anon, app.state.sb_service = make_supabase_clients()
+        
+        # Test database connection
+        app.state.db_connected = test_supabase_connection(
+            app.state.sb_anon, 
+            app.state.sb_service
+        )
+        
+        if app.state.db_connected:
+            logger.info("✅ Database connected successfully")
+        else:
+            logger.warning("⚠️ Database connection failed")
         
         # Log CORS configuration
         log_cors_config()
@@ -38,7 +54,8 @@ async def lifespan(app: FastAPI):
             logger.info("✅ OpenAI API key configured")
         else:
             logger.warning("⚠️ OpenAI API key not configured - voice features disabled")
-            
+        
+        app.state.ready = True
         logger.info("🚀 Voice Booking App API ready for production!")
         
     except Exception as e:
@@ -50,7 +67,9 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down Voice Booking App API...")
     try:
-        await database.disconnect()
+        app.state.sb_anon = None
+        app.state.sb_service = None
+        app.state.db_connected = False
         logger.info("✅ Database disconnected cleanly")
     except Exception as e:
         logger.error(f"Error during shutdown: {str(e)}")
@@ -128,14 +147,37 @@ async def general_exception_handler(request, exc: Exception):
 async def health_check():
     """Health check endpoint with database status"""
     try:
-        # Test database connection
-        db_status = "connected" if database.is_connected else "disconnected"
+        # Check app readiness
+        if not getattr(app.state, "ready", False):
+            return {
+                "status": "starting",
+                "service": "Voice Booking App API",
+                "version": settings.version,
+                "database": "initializing"
+            }
+        
+        # Test database connection using RPC or fallback
+        db_status = "disconnected"
+        test_client = getattr(app.state, "sb_service", None) or getattr(app.state, "sb_anon", None)
+        
+        if test_client:
+            try:
+                # Try RPC health check first
+                response = test_client.rpc("health_check").execute()
+                db_status = "connected" if response.data else "disconnected"
+            except Exception:
+                # Fallback to simple query
+                try:
+                    response = test_client.table("services").select("id").limit(1).execute()
+                    db_status = "connected"
+                except Exception:
+                    db_status = "disconnected"
         
         # Check OpenAI configuration
         openai_status = "configured" if settings.openai_api_key else "not_configured"
         
         return {
-            "status": "healthy",
+            "status": "healthy" if db_status == "connected" else "degraded",
             "service": "Voice Booking App API",
             "version": settings.version,
             "database": db_status,
