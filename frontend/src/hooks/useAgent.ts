@@ -9,7 +9,7 @@ import type {
   AgentStatusInfo, 
   AgentConfiguration,
   UseAgentReturn 
-} from '../types';
+} from '../types/index';
 
 export const useAgent = (): UseAgentReturn => {
   const [status, setStatus] = useState<AgentStatusInfo | undefined>();

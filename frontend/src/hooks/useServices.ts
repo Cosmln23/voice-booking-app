@@ -12,7 +12,7 @@ import type {
   ServiceFilters,
   ServiceStats,
   UseServicesReturn 
-} from '../types';
+} from '../types/index';
 
 export const useServices = (): UseServicesReturn => {
   const [services, setServices] = useState<Service[]>([]);

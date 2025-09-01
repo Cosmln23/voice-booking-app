@@ -10,7 +10,7 @@ import type {
   ChartData, 
   StatsPeriod,
   UseStatisticsReturn 
-} from '../types';
+} from '../types/index';
 
 export const useStatistics = (): UseStatisticsReturn => {
   const [statistics, setStatistics] = useState<DashboardStats | undefined>();

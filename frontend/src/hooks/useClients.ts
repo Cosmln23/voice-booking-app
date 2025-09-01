@@ -12,7 +12,7 @@ import type {
   ClientFilters,
   ClientStats,
   UseClientsReturn 
-} from '../types';
+} from '../types/index';
 
 export const useClients = (): UseClientsReturn => {
   const [clients, setClients] = useState<Client[]>([]);

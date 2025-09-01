@@ -11,7 +11,7 @@ import type {
   AppointmentUpdate, 
   AppointmentFilters,
   UseAppointmentsReturn 
-} from '../types';
+} from '../types/index';
 
 export const useAppointments = (): UseAppointmentsReturn => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
