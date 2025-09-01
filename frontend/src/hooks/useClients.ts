@@ -29,8 +29,8 @@ export const useClients = (): UseClientsReturn => {
       const params = {
         search: filters?.search,
         status: filters?.status,
-        limit: filters?.limit?.toString() || '50',
-        offset: filters?.offset?.toString() || '0',
+        limit: filters?.limit || 50,
+        offset: filters?.offset || 0,
       };
 
       const response = await api.clients.getClients(params);

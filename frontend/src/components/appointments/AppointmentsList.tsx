@@ -8,7 +8,9 @@ import { useAppointments } from '@/hooks'
 import type { Appointment, AppointmentStatus } from '@/types'
 
 // Extended appointment interface with client details for compatibility
-interface AppointmentWithDetails extends Appointment {
+interface AppointmentWithDetails extends Omit<Appointment, 'duration'> {
+  duration?: string
+  clientName?: string
   clientPhone?: string
   clientEmail?: string
   clientNotes?: string

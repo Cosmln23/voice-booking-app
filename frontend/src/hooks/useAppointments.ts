@@ -27,8 +27,8 @@ export const useAppointments = (): UseAppointmentsReturn => {
       const params = {
         date: filters?.date,
         status: filters?.status,
-        limit: filters?.limit?.toString() || '50',
-        offset: filters?.offset?.toString() || '0',
+        limit: filters?.limit || 50,
+        offset: filters?.offset || 0,
       };
 
       const response = await api.appointments.getAppointments(params);
