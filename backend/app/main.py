@@ -21,15 +21,39 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
     # Startup
-    print("Starting Voice Booking App API...")
+    logger.info("Starting Voice Booking App API...")
     
-    # Skip everything that might hang - just start the server
-    print("Skipping database and other connections for fast startup")
+    try:
+        # Initialize database connection
+        logger.info("Initializing database connection...")
+        await database.connect()
+        logger.info("✅ Database connected successfully")
+        
+        # Log CORS configuration
+        log_cors_config()
+        logger.info("✅ CORS configuration loaded")
+        
+        # Verify OpenAI configuration
+        if settings.openai_api_key:
+            logger.info("✅ OpenAI API key configured")
+        else:
+            logger.warning("⚠️ OpenAI API key not configured - voice features disabled")
+            
+        logger.info("🚀 Voice Booking App API ready for production!")
+        
+    except Exception as e:
+        logger.error(f"❌ Startup failed: {str(e)}")
+        # Don't raise - let health check handle the status
     
     yield
     
     # Shutdown
-    print("Shutting down Voice Booking App API")
+    logger.info("Shutting down Voice Booking App API...")
+    try:
+        await database.disconnect()
+        logger.info("✅ Database disconnected cleanly")
+    except Exception as e:
+        logger.error(f"Error during shutdown: {str(e)}")
 
 
 # Create FastAPI application
@@ -102,13 +126,30 @@ async def general_exception_handler(request, exc: Exception):
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "Voice Booking App API",
-        "version": "1.0.0",
-        "database": "mock_mode"
-    }
+    """Health check endpoint with database status"""
+    try:
+        # Test database connection
+        db_status = "connected" if database.is_connected else "disconnected"
+        
+        # Check OpenAI configuration
+        openai_status = "configured" if settings.openai_api_key else "not_configured"
+        
+        return {
+            "status": "healthy",
+            "service": "Voice Booking App API",
+            "version": settings.version,
+            "database": db_status,
+            "openai": openai_status,
+            "environment": "production" if not settings.debug else "development"
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return {
+            "status": "degraded",
+            "service": "Voice Booking App API",
+            "version": settings.version,
+            "error": str(e)
+        }
 
 
 # Root endpoint
