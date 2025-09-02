@@ -9,10 +9,16 @@ from app.models.client import (
     ClientListResponse, ClientStats, ClientStatus
 )
 from app.core.logging import get_logger
+from app.database.crud_clients import ClientCRUD
 from app.database import get_database
 
 router = APIRouter()
 logger = get_logger(__name__)
+
+
+async def get_client_crud(db = Depends(get_database)) -> ClientCRUD:
+    """Dependency injection for ClientCRUD"""
+    return ClientCRUD(db.get_client())
 
 # Mock data
 MOCK_CLIENTS = [
@@ -83,21 +89,14 @@ MOCK_CLIENTS = [
 
 
 @router.get("/clients/stats")
-async def get_client_stats():
+async def get_client_stats(client_crud: ClientCRUD = Depends(get_client_crud)):
     """Get client statistics"""
     try:
-        active_clients = len([c for c in MOCK_CLIENTS if c["status"] == ClientStatus.ACTIVE])
-        inactive_clients = len([c for c in MOCK_CLIENTS if c["status"] == ClientStatus.INACTIVE])
+        # Get statistics from database using CRUD
+        stats = await client_crud.get_client_stats()
         
-        # New clients this month (mock calculation)
-        new_this_month = len([c for c in MOCK_CLIENTS if c["created_at"].month == datetime.now().month])
-        
-        stats = ClientStats(
-            total_clients=len(MOCK_CLIENTS),
-            new_this_month=new_this_month,
-            active_clients=active_clients,
-            inactive_clients=inactive_clients
-        )
+        logger.info("Retrieved client statistics from database",
+                   extra={"total_clients": stats.total_clients, "active_clients": stats.active_clients})
         
         return {
             "success": True,
@@ -115,34 +114,20 @@ async def get_clients(
     search: Optional[str] = Query(None, description="Search by name, phone, or email"),
     status: Optional[ClientStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
-    offset: int = Query(0, ge=0, description="Number of results to skip")
+    offset: int = Query(0, ge=0, description="Number of results to skip"),
+    client_crud: ClientCRUD = Depends(get_client_crud)
 ):
     """Get clients with optional search and filtering"""
     try:
-        clients = MOCK_CLIENTS.copy()
+        # Get clients from database using CRUD
+        client_objects, total = await client_crud.get_clients(
+            search=search,
+            status=status,
+            limit=limit,
+            offset=offset
+        )
         
-        # Apply search filter
-        if search:
-            search_lower = search.lower()
-            clients = [
-                client for client in clients
-                if (search_lower in client["name"].lower() or
-                    search_lower in client["phone"] or
-                    (client["email"] and search_lower in client["email"].lower()))
-            ]
-        
-        # Apply status filter
-        if status:
-            clients = [client for client in clients if client["status"] == status]
-        
-        # Apply pagination
-        total = len(clients)
-        clients = clients[offset:offset + limit]
-        
-        # Convert to Pydantic models
-        client_objects = [Client(**client) for client in clients]
-        
-        logger.info(f"Retrieved {len(client_objects)} clients",
+        logger.info(f"Retrieved {len(client_objects)} clients from database",
                    extra={"total": total, "search": search, "status": status})
         
         return ClientListResponse(
@@ -164,37 +149,14 @@ def _get_write_client(request: Request):
 
 
 @router.post("/clients", response_model=ClientResponse)
-async def create_client(client_data: ClientCreate, request: Request):
-    """Create a new client using Supabase"""
-    sb_client = _get_write_client(request)
-    
-    if not sb_client:
-        logger.error("No Supabase client available")
-        raise HTTPException(status_code=503, detail="Database service unavailable")
-    
+async def create_client(client_data: ClientCreate, client_crud: ClientCRUD = Depends(get_client_crud)):
+    """Create a new client"""
     try:
-        # Prepare client data for insertion
-        new_client_data = {
-            "name": client_data.name,
-            "phone": client_data.phone,
-            "email": client_data.email,
-            "status": client_data.status.value if client_data.status else "active",
-            "notes": client_data.notes
-        }
+        # Create client in database using CRUD
+        client_obj = await client_crud.create_client(client_data)
         
-        # Insert into Supabase
-        response = sb_client.table("clients").insert(new_client_data).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=500, detail="Failed to create client - no data returned")
-        
-        created_client = response.data[0]
-        
-        logger.info(f"Created client {created_client['id']}: {created_client['name']}",
-                   extra={"client_id": created_client['id'], "client_name": created_client['name']})
-        
-        # Convert to Client model
-        client_obj = Client(**created_client)
+        logger.info(f"Created client {client_obj.id}: {client_obj.name}",
+                   extra={"client_id": str(client_obj.id), "client_name": client_obj.name})
         
         return ClientResponse(
             success=True,
@@ -202,52 +164,24 @@ async def create_client(client_data: ClientCreate, request: Request):
             message="Client created successfully"
         )
         
-    except APIError as e:
-        # PostgREST/Supabase specific errors
-        error_msg = getattr(e, 'message', str(e))
-        status_code = getattr(getattr(e, 'response', None), 'status_code', 400)
-        
-        logger.error(f"Supabase error creating client: {error_msg}", 
-                    extra={"status_code": status_code})
-        
-        # Map common error codes
-        if status_code == 409:
-            raise HTTPException(status_code=409, detail=f"Conflict: {error_msg}")
-        elif status_code == 422:
-            raise HTTPException(status_code=422, detail=f"Validation error: {error_msg}")
-        else:
-            raise HTTPException(status_code=status_code, detail=f"Database error: {error_msg}")
-            
     except Exception as e:
         logger.error(f"Failed to create client: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create client")
 
 
 @router.put("/clients/{client_id}", response_model=ClientResponse)
-async def update_client(client_id: str, client_data: ClientUpdate):
+async def update_client(client_id: str, client_data: ClientUpdate, client_crud: ClientCRUD = Depends(get_client_crud)):
     """Update an existing client"""
     try:
-        # Find client
-        client = next((c for c in MOCK_CLIENTS if c["id"] == client_id), None)
+        # Update client in database using CRUD
+        client_obj = await client_crud.update_client(client_id, client_data)
         
-        if not client:
+        if not client_obj:
             raise HTTPException(status_code=404, detail="Client not found")
         
-        # Update fields
-        update_data = client_data.model_dump(exclude_unset=True)
-        
-        # Regenerate avatar if name changed
-        if "name" in update_data:
-            name_parts = update_data["name"].split()
-            update_data["avatar"] = "".join([part[0].upper() for part in name_parts[:2]])
-        
-        client.update(update_data)
-        client["updated_at"] = datetime.now()
-        
-        client_obj = Client(**client)
-        
+        update_fields = list(client_data.model_dump(exclude_unset=True).keys())
         logger.info(f"Updated client {client_id}",
-                   extra={"client_id": client_id, "updated_fields": list(update_data.keys())})
+                   extra={"client_id": client_id, "updated_fields": update_fields})
         
         return ClientResponse(
             success=True,
@@ -263,20 +197,17 @@ async def update_client(client_id: str, client_data: ClientUpdate):
 
 
 @router.delete("/clients/{client_id}", response_model=ClientResponse)
-async def delete_client(client_id: str):
+async def delete_client(client_id: str, client_crud: ClientCRUD = Depends(get_client_crud)):
     """Delete a client"""
     try:
-        # Find and remove client
-        global MOCK_CLIENTS
-        client = next((c for c in MOCK_CLIENTS if c["id"] == client_id), None)
+        # Delete client from database using CRUD
+        deleted = await client_crud.delete_client(client_id)
         
-        if not client:
+        if not deleted:
             raise HTTPException(status_code=404, detail="Client not found")
         
-        MOCK_CLIENTS = [c for c in MOCK_CLIENTS if c["id"] != client_id]
-        
         logger.info(f"Deleted client {client_id}",
-                   extra={"client_id": client_id, "client_name": client["name"]})
+                   extra={"client_id": client_id})
         
         return ClientResponse(
             success=True,
