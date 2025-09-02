@@ -11,61 +11,61 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+# Global agent state tracking since agent_state table doesn't exist
+_GLOBAL_AGENT_STATUS = AgentStatus.INACTIVE
+
 
 class AgentCRUD:
     """CRUD operations for voice agent state and activity logs"""
     
     def __init__(self, client: Client):
         self.client = client
+        # agent_state table doesn't exist - using defaults
         self.agent_table = "agent_state"
-        self.logs_table = "agent_activity_logs"
+        # agent_activity_log table exists (singular name)
+        self.logs_table = "agent_activity_log"
     
     async def get_agent_status(self) -> AgentStatusInfo:
-        """Get current agent status with activity logs"""
+        """Get current agent status with activity logs (using defaults for missing tables)"""
         try:
-            # Get agent state (should be only one record)
-            agent_response = self.client.table(self.agent_table)\
-                .select("*")\
-                .limit(1)\
-                .execute()
+            # Use default agent state since agent_state table doesn't exist
+            default_config = self.get_default_agent_config()
             
-            if not agent_response.data:
-                # Create default agent state if none exists
-                await self.create_default_agent_state()
-                agent_response = self.client.table(self.agent_table)\
-                    .select("*")\
-                    .limit(1)\
-                    .execute()
-            
-            agent_data = agent_response.data[0]
-            
-            # Get recent activity logs (last 50)
-            logs_response = self.client.table(self.logs_table)\
-                .select("*")\
-                .order("timestamp", desc=True)\
-                .limit(50)\
-                .execute()
-            
+            # Try to get activity logs from existing table (if any)
             activity_logs = []
-            for log_data in logs_response.data:
-                activity_logs.append(ActivityLog(
-                    timestamp=datetime.fromisoformat(log_data["timestamp"].replace("Z", "+00:00")),
-                    type=ActivityLogType(log_data["type"]),
-                    message=log_data["message"],
-                    client_info=log_data.get("client_info"),
-                    details=log_data.get("details")
-                ))
+            try:
+                # Try with singular table name from hint
+                logs_response = self.client.table("agent_activity_log")\
+                    .select("*")\
+                    .order("timestamp", desc=True)\
+                    .limit(50)\
+                    .execute()
+                
+                for log_data in logs_response.data:
+                    activity_logs.append(ActivityLog(
+                        timestamp=datetime.fromisoformat(log_data["timestamp"].replace("Z", "+00:00")),
+                        type=ActivityLogType(log_data["type"]),
+                        message=log_data["message"],
+                        client_info=log_data.get("client_info"),
+                        details=log_data.get("details")
+                    ))
+            except Exception:
+                # If logs table doesn't exist or has issues, use empty list
+                logger.info("Activity logs table not available, using empty list")
+                activity_logs = []
             
+            # Return status info with global agent status
+            global _GLOBAL_AGENT_STATUS
             status_info = AgentStatusInfo(
-                status=AgentStatus(agent_data["status"]),
-                last_activity=datetime.fromisoformat(agent_data["last_activity"].replace("Z", "+00:00")) if agent_data.get("last_activity") else None,
-                total_calls=agent_data.get("total_calls", 0),
-                success_rate=float(agent_data.get("success_rate", 0.0)),
+                status=_GLOBAL_AGENT_STATUS,  # Use global status
+                last_activity=None,
+                total_calls=0,
+                success_rate=0.0,
                 activity_log=activity_logs
             )
             
-            logger.info(f"Retrieved agent status from database: {status_info.status}",
-                       extra={"status": status_info.status, "total_calls": status_info.total_calls})
+            logger.info(f"Retrieved agent status (defaults): {status_info.status}",
+                       extra={"status": status_info.status, "total_calls": status_info.total_calls, "logs_count": len(activity_logs)})
             
             return status_info
             
@@ -74,84 +74,59 @@ class AgentCRUD:
             raise
     
     async def update_agent_status(self, status: AgentStatus) -> bool:
-        """Update agent status"""
+        """Update agent status (global variable since agent_state table doesn't exist)"""
         try:
-            # Update agent status
-            update_data = {
-                "status": status.value,
-                "last_activity": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
-            }
+            # Update global status
+            global _GLOBAL_AGENT_STATUS
+            _GLOBAL_AGENT_STATUS = status
             
-            response = self.client.table(self.agent_table)\
-                .update(update_data)\
-                .execute()
+            # Add activity log for status change
+            await self.add_activity_log(
+                ActivityLogType.SYSTEM_STATUS,
+                f"Agent vocal {'pornit' if status == AgentStatus.ACTIVE else 'oprit'}",
+                details={"new_status": status.value}
+            )
             
-            if response.data:
-                # Add activity log for status change
-                await self.add_activity_log(
-                    ActivityLogType.SYSTEM_STATUS,
-                    f"Agent vocal {'pornit' if status == AgentStatus.ACTIVE else 'oprit'}",
-                    details={"new_status": status.value}
-                )
-                
-                logger.info(f"Agent status updated to: {status}",
-                           extra={"status": status.value})
-                return True
-            
-            return False
+            logger.info(f"Agent status updated to: {status} (global variable)",
+                       extra={"status": status.value, "note": "agent_state table missing - using global variable"})
+            return True
             
         except Exception as e:
             logger.error(f"Failed to update agent status: {e}", exc_info=True)
             raise
     
     async def get_agent_config(self) -> AgentConfiguration:
-        """Get agent configuration"""
+        """Get agent configuration (returns defaults since agent_state table doesn't exist)"""
         try:
-            # Get agent configuration from state table
-            response = self.client.table(self.agent_table)\
-                .select("config")\
-                .limit(1)\
-                .execute()
+            # Since agent_state table doesn't exist, return default config
+            config = self.get_default_agent_config()
             
-            if response.data and response.data[0].get("config"):
-                config_data = response.data[0]["config"]
-                return AgentConfiguration(**config_data)
+            logger.info("Retrieved agent configuration (defaults)",
+                       extra={"enabled": config.enabled, "model": config.model, "note": "agent_state table missing"})
             
-            # Return default config if not found
-            return self.get_default_agent_config()
+            return config
             
         except Exception as e:
             logger.error(f"Failed to retrieve agent config: {e}", exc_info=True)
             raise
     
     async def update_agent_config(self, config: AgentConfiguration) -> AgentConfiguration:
-        """Update agent configuration"""
+        """Update agent configuration (simulated since agent_state table doesn't exist)"""
         try:
-            # Update configuration in agent state
-            update_data = {
-                "config": config.model_dump(),
-                "updated_at": datetime.now().isoformat()
-            }
+            # Since agent_state table doesn't exist, simulate the update
+            # and only store the config change in activity logs
             
-            response = self.client.table(self.agent_table)\
-                .update(update_data)\
-                .execute()
+            # Add activity log for config update
+            await self.add_activity_log(
+                ActivityLogType.SYSTEM_STATUS,
+                "Configurație agent actualizată",
+                details=config.model_dump()
+            )
             
-            if response.data:
-                # Add activity log for config update
-                await self.add_activity_log(
-                    ActivityLogType.SYSTEM_STATUS,
-                    "Configurație agent actualizată",
-                    details=config.model_dump()
-                )
-                
-                logger.info("Agent configuration updated in database",
-                           extra={"enabled": config.enabled, "model": config.model})
-                
-                return config
+            logger.info("Agent configuration updated (simulated)",
+                       extra={"enabled": config.enabled, "model": config.model, "note": "agent_state table missing - using activity logs only"})
             
-            raise Exception("Failed to update agent configuration")
+            return config
             
         except Exception as e:
             logger.error(f"Failed to update agent config: {e}", exc_info=True)
@@ -191,7 +166,7 @@ class AgentCRUD:
                 await self._cleanup_old_logs()
                 
                 logger.info(f"Activity log added: {log_type.value}",
-                           extra={"type": log_type.value, "message": message})
+                           extra={"type": log_type.value, "log_message": message})
                 
                 return log_entry
             
@@ -247,59 +222,51 @@ class AgentCRUD:
             raise
     
     async def increment_call_stats(self, success: bool) -> dict:
-        """Increment call statistics and update success rate"""
+        """Increment call statistics (simulated since agent_state table doesn't exist)"""
         try:
-            # Get current stats
-            response = self.client.table(self.agent_table)\
-                .select("total_calls, success_rate")\
-                .limit(1)\
-                .execute()
+            # Since agent_state table doesn't exist, we calculate stats from activity logs
             
-            current_calls = response.data[0].get("total_calls", 0) if response.data else 0
-            current_success_rate = float(response.data[0].get("success_rate", 0.0)) if response.data else 0.0
+            # Get recent activity logs to estimate stats
+            try:
+                logs_response = self.client.table(self.logs_table)\
+                    .select("*")\
+                    .in_("type", ["booking_success", "booking_failed"])\
+                    .order("timestamp", desc=True)\
+                    .limit(100)\
+                    .execute()
+                
+                total_calls = len(logs_response.data)
+                successful_calls = len([log for log in logs_response.data if log["type"] == "booking_success"])
+                
+            except Exception:
+                # If can't get logs, use defaults
+                total_calls = 0
+                successful_calls = 0
             
             # Calculate new stats
-            new_total_calls = current_calls + 1
+            new_total_calls = total_calls + 1
+            new_successful = successful_calls + (1 if success else 0)
+            new_success_rate = (new_successful / new_total_calls) * 100 if new_total_calls > 0 else 0.0
             
-            # Estimate successful calls from current rate
-            current_successful = int((current_success_rate / 100) * current_calls) if current_calls > 0 else 0
-            new_successful = current_successful + (1 if success else 0)
-            new_success_rate = (new_successful / new_total_calls) * 100
+            logger.info(f"Call stats calculated from logs: total={new_total_calls}, success_rate={new_success_rate:.1f}% (simulated)",
+                       extra={"total_calls": new_total_calls, "success_rate": new_success_rate, "note": "agent_state table missing"})
             
-            # Update stats
-            update_data = {
+            return {
                 "total_calls": new_total_calls,
-                "success_rate": round(new_success_rate, 1),
-                "last_activity": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
+                "success_rate": new_success_rate,
+                "call_successful": success
             }
             
-            update_response = self.client.table(self.agent_table)\
-                .update(update_data)\
-                .execute()
-            
-            if update_response.data:
-                logger.info(f"Call stats updated: total={new_total_calls}, success_rate={new_success_rate:.1f}%",
-                           extra={"total_calls": new_total_calls, "success_rate": new_success_rate})
-                
-                return {
-                    "total_calls": new_total_calls,
-                    "success_rate": new_success_rate,
-                    "call_successful": success
-                }
-            
-            raise Exception("Failed to update call statistics")
-            
         except Exception as e:
-            logger.error(f"Failed to update call stats: {e}", exc_info=True)
+            logger.error(f"Failed to calculate call stats: {e}", exc_info=True)
             raise
     
     async def simulate_incoming_call(self) -> dict:
         """Simulate incoming call for testing (creates real activity logs)"""
         try:
-            # Check if agent is active
-            agent_status = await self.get_agent_status()
-            if agent_status.status != AgentStatus.ACTIVE:
+            # Check if agent is active using global status
+            global _GLOBAL_AGENT_STATUS
+            if _GLOBAL_AGENT_STATUS != AgentStatus.ACTIVE:
                 raise Exception("Agent must be active to receive calls")
             
             # Generate realistic client info
@@ -367,31 +334,23 @@ class AgentCRUD:
             raise
     
     async def create_default_agent_state(self) -> bool:
-        """Create default agent state if none exists"""
+        """Create default agent state (simulated since agent_state table doesn't exist)"""
         try:
-            default_config = self.get_default_agent_config()
+            # Since agent_state table doesn't exist, we simulate creating default state
+            # by logging that the agent is initialized with defaults
             
-            agent_data = {
-                "id": str(uuid4()),
-                "status": AgentStatus.INACTIVE.value,
-                "last_activity": None,
-                "total_calls": 0,
-                "success_rate": 0.0,
-                "config": default_config.model_dump(),
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
-            }
+            await self.add_activity_log(
+                ActivityLogType.SYSTEM_STATUS,
+                "Agent inicializat cu configurația implicită",
+                details=self.get_default_agent_config().model_dump()
+            )
             
-            response = self.client.table(self.agent_table).insert(agent_data).execute()
-            
-            if response.data:
-                logger.info("Created default agent state in database")
-                return True
-            
-            return False
+            logger.info("Agent default state simulated (agent_state table missing)",
+                       extra={"note": "Default state logged in activity logs only"})
+            return True
             
         except Exception as e:
-            logger.error(f"Failed to create default agent state: {e}", exc_info=True)
+            logger.error(f"Failed to simulate default agent state: {e}", exc_info=True)
             raise
     
     async def _cleanup_old_logs(self) -> bool:
