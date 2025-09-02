@@ -30,10 +30,9 @@ class ClientCRUD:
         try:
             query = self.client.table(self.table).select("*")
             
-            # Apply search filter
+            # Apply search filter - simple name search for now
             if search:
-                search_lower = search.lower()
-                query = query.or_(f"name.ilike.%{search}%,phone.ilike.%{search}%,email.ilike.%{search}%")
+                query = query.ilike("name", f"%{search}%")
             
             # Apply status filter
             if status:
@@ -42,7 +41,7 @@ class ClientCRUD:
             # Count total for pagination
             count_query = self.client.table(self.table).select("id", count="exact")
             if search:
-                count_query = count_query.or_(f"name.ilike.%{search}%,phone.ilike.%{search}%,email.ilike.%{search}%")
+                count_query = count_query.ilike("name", f"%{search}%")
             if status:
                 count_query = count_query.eq("status", status.value)
             
