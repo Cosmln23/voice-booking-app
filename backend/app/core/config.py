@@ -37,8 +37,8 @@ class Settings(BaseSettings):
         "http://localhost:3000",  # Next.js dev
         "http://127.0.0.1:3000",  # Alternative localhost
         "https://voice-booking-app.vercel.app",  # Production frontend
-        "https://*.vercel.app",  # Vercel preview deployments
-        "https://voice-booking-app-*.vercel.app",  # Vercel branch deployments
+        "https://voice-booking-4gcm1vq41-cosmlns-projects.vercel.app",  # Current deployment
+        "https://voice-booking-app-git-fix-local-product-2bf139-cosmlns-projects.vercel.app",  # Branch deployment
     ]
     
     class Config:
