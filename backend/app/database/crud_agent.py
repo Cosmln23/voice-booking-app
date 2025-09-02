@@ -415,9 +415,10 @@ class AgentCRUD:
                 keep_ids = [log["id"] for log in logs_to_keep.data]
                 
                 # Delete old logs
+                keep_ids_str = "(" + ",".join([f"'{id}'" for id in keep_ids]) + ")"
                 delete_response = self.client.table(self.logs_table)\
                     .delete()\
-                    .not_("id", "in", f"({','.join([f\"'{id}\"' for id in keep_ids])})")\
+                    .not_("id", "in", keep_ids_str)\
                     .execute()
                 
                 deleted_count = len(delete_response.data) if delete_response.data else 0
