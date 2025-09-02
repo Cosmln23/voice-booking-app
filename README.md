@@ -1,41 +1,74 @@
 # 🎙️ Voice Booking App
 
-> **Aplicație de programări cu interfață vocală pentru saloane/frizerii**  
-> Powered by OpenAI Realtime API + FastAPI + Next.js + Supabase
+> **Aplicație de programări prin telefon clasic pentru saloane/frizerii**  
+> Powered by Twilio + OpenAI Realtime API + FastAPI + Next.js + Supabase
 
 ## 🎯 Descriere Proiect
 
-Sistem de programări automatizat cu interacțiune vocală naturală. Clienții pot programa servicii prin conversație audio simplă, fără interfață grafică complexă.
+Sistem de programări automatizat prin **apeluri telefonice reale**. Clienții sună la numărul salonului și sunt preluați automat de un AI agent vocal care procesează programările în română.
 
-### Flux Principal
-1. **Salut vocal** → Identificarea intenției
-2. **Serviciu dorit** → "Tuns și barbă" 
-3. **Verificare disponibilitate** → Calendar integration
-4. **Confirmare oră/dată** → Slot reservation
-5. **Date client** → Nume, telefon
-6. **Înregistrare finală** → Database + Calendar sync
+## 📞 Dual Interface Architecture
+
+### 1. **CLIENȚI FINALI** - Telefon Clasic (PSTN)
+**Modalitate**: Clienții sună numărul de telefon al salonului  
+**Flow**: `Telefon → Twilio → Bridge → OpenAI Realtime → Booking`
+
+**Flux Principal:**
+1. **Apel telefonic** la numărul salonului
+2. **Răspuns AI automat** în română: "Bună ziua! Salon Voice Booking, cu ce vă pot ajuta?"
+3. **Conversație naturală** → "Vreau o programare pentru tuns mâine"
+4. **Procesare vocală** → Identificare serviciu, verificare disponibilitate
+5. **Colectare date** → Nume, confirmarea orei
+6. **Programare finalizată** → Calendar sync + SMS confirmare
+
+### 2. **PROPRIETAR SALON** - Dashboard Web
+**Modalitate**: Interfață web pentru management și configurare  
+**URL**: `https://voice-booking-app.vercel.app/admin`
+
+**Funcționalități:**
+- Dashboard cu toate programările
+- Agent Vocal Control Center (configurare AI, monitorizare apeluri)
+- Managementul clienților, serviciilor, statistici
+- Setări business și program de lucru
 
 ---
 
-## 🏗️ Arhitectură Tehnică
+## 🏗️ Arhitectură Tehnică Completă
 
+### PSTN Call Flow (Clienti finali)
 ```mermaid
 graph TD
-    A[Client Voice / Next.js] --WebSocket Audio--> C[FastAPI Backend]
-    C --Secure Proxy--> B[OpenAI Realtime API]
-    C ↔ D[Supabase Database]
-    C --Async Sync--> E[Google Calendar API]
-    C --Tool Calls--> F[Dialogue State Manager]
-    F --FSM Control--> C
+    A[Apelant telefon] -->|Sună| B[Twilio Phone Number]
+    B -->|TwiML Connect| C[Twilio Stream WebSocket]
+    C -->|wss://app.../twilio-stream| D[Bridge Railway]
+    D -->|Audio bidirecțional| E[OpenAI Realtime WS]
+    D -->|Tool calls JSON| F[Backend FastAPI]
+    F -->|CRUD| G[Supabase Database]
+    F -->|Sync| H[Google Calendar]
+    E -->|Răspuns TTS| D
+    D -->|Audio| C
+    C -->|PSTN| B
+    B -->|Voce| A
+```
+
+### Web Dashboard Flow (Proprietar salon)
+```mermaid
+graph TD
+    I[Admin Browser] -->|HTTPS| J[Next.js Frontend]
+    J -->|API calls| F[Backend FastAPI]
+    J -->|WebSocket| K[Real-time Updates]
+    F -->|Monitor| L[Agent Status]
+    F -->|Logs| M[Call History]
 ```
 
 ### Stack Principal
-- **Frontend**: Next.js + React + TypeScript + Tailwind CSS
-- **Backend**: FastAPI + Python 3.11+ + WebSockets
+- **Telefonie**: Twilio (PSTN numbers, Stream API, TwiML)
+- **Voice Processing**: OpenAI Realtime API + audio bridge
+- **Backend**: FastAPI + Python 3.11+ + WebSockets + Twilio Bridge
+- **Frontend**: Next.js + React + TypeScript (Admin Panel Only)  
 - **Database**: Supabase (PostgreSQL + Auth + Real-time)
-- **Voice**: OpenAI Realtime API + Web Audio API
 - **Calendar**: Google Calendar API integration
-- **Deployment**: Vercel (Frontend) + Railway (Backend)
+- **Deployment**: Railway (Backend + Twilio Bridge) + Vercel (Admin Panel)
 
 ---
 
@@ -120,11 +153,18 @@ npx supabase start
 npx supabase db reset
 ```
 
-### 🎙️ Voice Testing
-1. Deschide `http://localhost:3000`
-2. Apasă butonul mic **🎤**
-3. Spune: *"Bună, vreau o programare pentru tuns"*
-4. Urmează instrucțiunile vocale
+### 📞 Voice Testing (Development)
+**Pentru testare locală cu Twilio:**
+1. Configurează Twilio webhook: `https://your-ngrok-url/twilio/voice`
+2. Sună numărul Twilio: `+40 XXX XXX XXX`
+3. Conversație AI: *"Bună ziua! Cu ce vă pot ajuta?"*
+4. Răspunde: *"Vreau o programare pentru tuns mâine"*
+5. Urmează fluxul de programare vocală
+
+**Admin Panel Testing:**
+1. Deschide `http://localhost:3000/admin`
+2. Vezi programările în timp real
+3. Monitorizează apelurile în Agent Vocal section
 
 ---
 
