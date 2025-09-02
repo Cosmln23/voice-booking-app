@@ -5,6 +5,7 @@ import os
 from typing import Optional, Tuple
 from supabase import create_client, Client
 from app.core.logging import get_logger
+from app.core.config import settings
 
 logger = get_logger(__name__)
 
@@ -25,9 +26,9 @@ def make_supabase_clients() -> Tuple[Optional[Client], Optional[Client]]:
     Create Supabase clients with proper error handling
     Returns: (sb_anon, sb_service)
     """
-    url = _env_clean("SUPABASE_URL")
-    anon_key = _env_clean("SUPABASE_ANON_KEY")
-    service_key = _env_clean("SUPABASE_SERVICE_KEY")
+    url = settings.supabase_url
+    anon_key = settings.supabase_anon_key
+    service_key = settings.supabase_service_key
     
     if not url:
         logger.warning("SUPABASE_URL not configured")
