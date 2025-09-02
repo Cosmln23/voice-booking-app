@@ -9,6 +9,7 @@ from app.models.user import (
     AgentConfiguration
 )
 from app.core.logging import get_logger
+from app.core.logging_sanitize import safe_extra
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -261,7 +262,7 @@ async def update_agent_config(config: AgentConfiguration):
         )
         
         logger.info("Agent configuration updated",
-                   extra={"config_changes": config.model_dump()})
+                   extra=safe_extra({"config_changes": config.model_dump()}))
         
         return {
             "success": True,
