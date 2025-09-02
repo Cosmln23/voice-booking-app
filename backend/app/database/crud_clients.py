@@ -175,7 +175,7 @@ class ClientCRUD:
             )
             
             logger.info(f"Created client {client.id}: {client.name}",
-                       extra={"client_id": client.id, "name": client.name})
+                       extra={"client_id": client.id, "client_name": client.name})
             
             return client
             

@@ -190,7 +190,7 @@ async def create_service(service_data: ServiceCreate):
         service_obj = Service(**new_service)
         
         logger.info(f"Created service {service_obj.id}: {service_obj.name}",
-                   extra={"service_id": service_obj.id, "name": service_obj.name, "price": service_obj.price})
+                   extra={"service_id": service_obj.id, "service_name": service_obj.name, "price": service_obj.price})
         
         return ServiceResponse(
             success=True,
@@ -250,7 +250,7 @@ async def delete_service(service_id: str):
         MOCK_SERVICES = [s for s in MOCK_SERVICES if s["id"] != service_id]
         
         logger.info(f"Deleted service {service_id}",
-                   extra={"service_id": service_id, "name": service["name"]})
+                   extra={"service_id": service_id, "service_name": service["name"]})
         
         return ServiceResponse(
             success=True,

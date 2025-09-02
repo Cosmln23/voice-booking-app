@@ -172,7 +172,7 @@ class ServiceCRUD:
             )
             
             logger.info(f"Created service {service.id}: {service.name}",
-                       extra={"service_id": service.id, "name": service.name, "price": service.price})
+                       extra={"service_id": service.id, "service_name": service.name, "price": service.price})
             
             return service
             

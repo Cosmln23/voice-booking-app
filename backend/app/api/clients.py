@@ -191,7 +191,7 @@ async def create_client(client_data: ClientCreate, request: Request):
         created_client = response.data[0]
         
         logger.info(f"Created client {created_client['id']}: {created_client['name']}",
-                   extra={"client_id": created_client['id'], "name": created_client['name']})
+                   extra={"client_id": created_client['id'], "client_name": created_client['name']})
         
         # Convert to Client model
         client_obj = Client(**created_client)
@@ -276,7 +276,7 @@ async def delete_client(client_id: str):
         MOCK_CLIENTS = [c for c in MOCK_CLIENTS if c["id"] != client_id]
         
         logger.info(f"Deleted client {client_id}",
-                   extra={"client_id": client_id, "name": client["name"]})
+                   extra={"client_id": client_id, "client_name": client["name"]})
         
         return ClientResponse(
             success=True,
