@@ -313,6 +313,18 @@ git push
 1. **Database Import Fix**: Added `get_database` function to `app.database` module
 2. **YAML Formatting**: Fixed CI/CD workflow indentation for GitHub Actions
 3. **Railway Deployment**: Resolved service ID environment variable configuration
+4. **✅ LOGGING CONFLICT RESOLUTION**: Fixed "Attempt to overwrite 'name' in LogRecord" error
+   - **Root Cause**: `config.model_dump()` in agent.py contained reserved `name` field
+   - **Solution**: Created `logging_sanitize.py` with `safe_extra()` function
+   - **Files Modified**: Only `app/api/agent.py` (surgical fix) + new utility file
+   - **Result**: Client creation API now works 100% ✅
+
+5. **✅ CORS REGEX SOLUTION**: Fixed CORS blocking for all Vercel domains
+   - **Root Cause**: Wildcard CORS patterns couldn't match complex Vercel subdomain formats
+   - **Solution**: Implemented `allow_origin_regex=r"^https:\/\/.*\.vercel\.app$"` in `cors.py`
+   - **Files Modified**: Only `backend/app/core/cors.py` (surgical precision)
+   - **Result**: All Vercel deployments (production, preview, branch) now work ✅
+   - **Security**: Blocks non-Vercel domains while allowing all legitimate deployments
 
 ### **Previous Fixes**:
 - TypeScript compilation errors (50+ → 0)
