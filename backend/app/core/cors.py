@@ -71,9 +71,19 @@ def is_allowed_origin(origin: str) -> bool:
 
 
 def get_cors_config() -> dict:
-    """Get CORS middleware configuration"""
+    """Get CORS middleware configuration with regex support for Vercel domains"""
+    
+    # Static origins for localhost development
+    static_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001", 
+        "http://127.0.0.1:3001",
+    ]
+    
     return {
-        "allow_origins": get_allowed_origins(),
+        "allow_origins": static_origins,
+        "allow_origin_regex": r"^https:\/\/.*\.vercel\.app$",  # All Vercel domains
         "allow_credentials": True,
         "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         "allow_headers": [
@@ -101,9 +111,10 @@ def log_cors_config():
     """Log current CORS configuration for debugging"""
     config = get_cors_config()
     logger.info(
-        "CORS configuration loaded",
+        "CORS configuration loaded with regex support",
         extra={
-            "allowed_origins": config["allow_origins"],
+            "static_origins": config["allow_origins"],
+            "vercel_regex": config["allow_origin_regex"],
             "allow_credentials": config["allow_credentials"],
             "allow_methods": config["allow_methods"],
             "debug_mode": settings.debug
