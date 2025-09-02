@@ -8,6 +8,7 @@ from app.models.service import (
     ServiceListResponse, ServiceStats, ServiceCategory, ServiceStatus
 )
 from app.core.logging import get_logger
+from app.core.auth import require_user
 from app.database.crud_services import ServiceCRUD
 from app.database import get_database
 
@@ -103,7 +104,7 @@ MOCK_SERVICES = [
 
 
 @router.get("/services/stats")
-async def get_service_stats(service_crud: ServiceCRUD = Depends(get_service_crud)):
+async def get_service_stats(service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
     """Get service statistics"""
     try:
         # Get statistics from database using CRUD
@@ -129,7 +130,8 @@ async def get_services(
     status: Optional[ServiceStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    service_crud: ServiceCRUD = Depends(get_service_crud)
+    service_crud: ServiceCRUD = Depends(get_service_crud),
+    user: dict = Depends(require_user)
 ):
     """Get services with optional filtering"""
     try:
@@ -157,7 +159,7 @@ async def get_services(
 
 
 @router.post("/services", response_model=ServiceResponse)
-async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud)):
+async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
     """Create a new service"""
     try:
         # Create service in database using CRUD
@@ -178,7 +180,7 @@ async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD 
 
 
 @router.put("/services/{service_id}", response_model=ServiceResponse)
-async def update_service(service_id: str, service_data: ServiceUpdate, service_crud: ServiceCRUD = Depends(get_service_crud)):
+async def update_service(service_id: str, service_data: ServiceUpdate, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
     """Update an existing service"""
     try:
         # Update service in database using CRUD
@@ -205,7 +207,7 @@ async def update_service(service_id: str, service_data: ServiceUpdate, service_c
 
 
 @router.delete("/services/{service_id}", response_model=ServiceResponse)
-async def delete_service(service_id: str, service_crud: ServiceCRUD = Depends(get_service_crud)):
+async def delete_service(service_id: str, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
     """Delete a service"""
     try:
         # Delete service from database using CRUD

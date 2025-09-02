@@ -9,6 +9,7 @@ from app.models.client import (
     ClientListResponse, ClientStats, ClientStatus
 )
 from app.core.logging import get_logger
+from app.core.auth import require_user
 from app.database.crud_clients import ClientCRUD
 from app.database import get_database
 
@@ -89,7 +90,10 @@ MOCK_CLIENTS = [
 
 
 @router.get("/clients/stats")
-async def get_client_stats(client_crud: ClientCRUD = Depends(get_client_crud)):
+async def get_client_stats(
+    client_crud: ClientCRUD = Depends(get_client_crud),
+    user: dict = Depends(require_user)
+):
     """Get client statistics"""
     try:
         # Get statistics from database using CRUD
@@ -115,7 +119,8 @@ async def get_clients(
     status: Optional[ClientStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    client_crud: ClientCRUD = Depends(get_client_crud)
+    client_crud: ClientCRUD = Depends(get_client_crud),
+    user: dict = Depends(require_user)
 ):
     """Get clients with optional search and filtering"""
     try:
@@ -149,7 +154,11 @@ def _get_write_client(request: Request):
 
 
 @router.post("/clients", response_model=ClientResponse)
-async def create_client(client_data: ClientCreate, client_crud: ClientCRUD = Depends(get_client_crud)):
+async def create_client(
+    client_data: ClientCreate, 
+    client_crud: ClientCRUD = Depends(get_client_crud),
+    user: dict = Depends(require_user)
+):
     """Create a new client"""
     try:
         # Create client in database using CRUD
@@ -170,7 +179,12 @@ async def create_client(client_data: ClientCreate, client_crud: ClientCRUD = Dep
 
 
 @router.put("/clients/{client_id}", response_model=ClientResponse)
-async def update_client(client_id: str, client_data: ClientUpdate, client_crud: ClientCRUD = Depends(get_client_crud)):
+async def update_client(
+    client_id: str, 
+    client_data: ClientUpdate, 
+    client_crud: ClientCRUD = Depends(get_client_crud),
+    user: dict = Depends(require_user)
+):
     """Update an existing client"""
     try:
         # Update client in database using CRUD
@@ -197,7 +211,11 @@ async def update_client(client_id: str, client_data: ClientUpdate, client_crud: 
 
 
 @router.delete("/clients/{client_id}", response_model=ClientResponse)
-async def delete_client(client_id: str, client_crud: ClientCRUD = Depends(get_client_crud)):
+async def delete_client(
+    client_id: str, 
+    client_crud: ClientCRUD = Depends(get_client_crud),
+    user: dict = Depends(require_user)
+):
     """Delete a client"""
     try:
         # Delete client from database using CRUD

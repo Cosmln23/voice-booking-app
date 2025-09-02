@@ -8,6 +8,7 @@ from app.models.user import (
 )
 from app.core.logging import get_logger
 from app.core.logging_sanitize import safe_extra
+from app.core.auth import require_user
 from app.database.crud_agent import AgentCRUD
 from app.database import get_database
 
@@ -26,7 +27,8 @@ async def get_agent_crud(db = Depends(get_database)) -> AgentCRUD:
 
 @router.get("/agent/status")
 async def get_agent_status(
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Get current voice agent status"""
     try:
@@ -48,7 +50,8 @@ async def get_agent_status(
 
 @router.post("/agent/start")
 async def start_agent(
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Start the voice agent"""
     try:
@@ -83,7 +86,8 @@ async def start_agent(
 
 @router.post("/agent/stop")
 async def stop_agent(
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Stop the voice agent"""
     try:
@@ -120,7 +124,8 @@ async def stop_agent(
 async def get_agent_logs(
     limit: int = 20,
     log_type: Optional[ActivityLogType] = None,
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Get agent activity logs"""
     try:
@@ -143,7 +148,8 @@ async def get_agent_logs(
 
 @router.get("/agent/config")
 async def get_agent_config(
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Get agent configuration"""
     try:
@@ -163,7 +169,8 @@ async def get_agent_config(
 @router.put("/agent/config")
 async def update_agent_config(
     config: AgentConfiguration,
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Update agent configuration"""
     try:
@@ -186,7 +193,8 @@ async def update_agent_config(
 # Simulate incoming call (for testing)
 @router.post("/agent/simulate-call")
 async def simulate_incoming_call(
-    agent_crud: AgentCRUD = Depends(get_agent_crud)
+    agent_crud: AgentCRUD = Depends(get_agent_crud),
+    user: dict = Depends(require_user)
 ):
     """Simulate an incoming call for testing purposes"""
     try:

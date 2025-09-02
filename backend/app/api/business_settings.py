@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from app.models.user import BusinessSettings, WorkingHours, NotificationSettings, AgentConfiguration
 from app.core.logging import get_logger
+from app.core.auth import require_user
 from app.database.crud_business_settings import BusinessSettingsCRUD
 from app.database import get_database
 
@@ -17,7 +18,8 @@ async def get_business_settings_crud(db = Depends(get_database)) -> BusinessSett
 
 @router.get("/settings")
 async def get_business_settings(
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Get current business settings"""
     try:
@@ -40,7 +42,8 @@ async def get_business_settings(
 @router.put("/settings")
 async def update_business_settings(
     settings: BusinessSettings,
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Update business settings"""
     try:
@@ -66,7 +69,8 @@ async def update_business_settings(
 
 @router.get("/settings/working-hours")
 async def get_working_hours(
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Get business working hours"""
     try:
@@ -94,7 +98,8 @@ async def get_working_hours(
 @router.put("/settings/working-hours")
 async def update_working_hours(
     working_hours: list[WorkingHours],
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Update business working hours"""
     try:
@@ -129,7 +134,8 @@ async def update_working_hours(
 
 @router.get("/settings/notifications")
 async def get_notification_settings(
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Get notification settings"""
     try:
@@ -149,7 +155,8 @@ async def get_notification_settings(
 @router.put("/settings/notifications")
 async def update_notification_settings(
     notifications: NotificationSettings,
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Update notification settings"""
     try:
@@ -178,7 +185,8 @@ async def update_notification_settings(
 
 @router.get("/settings/agent")
 async def get_agent_settings(
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Get voice agent settings"""
     try:
@@ -198,7 +206,8 @@ async def get_agent_settings(
 @router.put("/settings/agent")
 async def update_agent_settings(
     agent_config: AgentConfiguration,
-    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud),
+    user: dict = Depends(require_user)
 ):
     """Update voice agent settings"""
     try:

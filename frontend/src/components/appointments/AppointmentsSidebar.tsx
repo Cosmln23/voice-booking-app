@@ -1,6 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import clsx from "clsx"
+import { supabase } from '@/lib/api'
+import { useRouter } from 'next/navigation'
 
 import { 
   Calendar,
@@ -13,7 +16,9 @@ import {
   TrendingUp,
   Mic,
   Settings,
-  X
+  X,
+  User,
+  LogOut
 } from 'lucide-react'
 
 import Image from 'next/image'
@@ -44,6 +49,60 @@ interface AppointmentsSidebarProps {
 }
 
 export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentPage = 'dashboard', onPageChange }: AppointmentsSidebarProps) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session?.user) {
+          setIsLoggedIn(true)
+          setUserInfo(session.user)
+        } else {
+          setIsLoggedIn(false)
+          setUserInfo(null)
+        }
+      } catch (error) {
+        console.error('Session error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsLoggedIn(true)
+        setUserInfo(session.user)
+      } else {
+        setIsLoggedIn(false)
+        setUserInfo(null)
+      }
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogin = () => {
+    router.push('/login')
+  }
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut()
+      setIsLoggedIn(false)
+      setUserInfo(null)
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
   return (
     <div className={clsx(
       "bg-card border-border flex flex-col",
@@ -124,17 +183,51 @@ export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentP
       
       {/* User Profile */}
       <div className="p-3 border-t border-border flex items-center whitespace-nowrap">
-        <Image
-          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop"
-          alt="user"
-          width={32}
-          height={32}
-          className="w-8 h-8 rounded-full object-cover"
-        />
-        <div className="ml-2">
-          <div className="text-sm font-medium text-primary">Alexandra I.</div>
-          <div className="text-xs text-secondary">salon.example@email.com</div>
-        </div>
+        {loading ? (
+          <div className="flex items-center w-full">
+            <div className="w-8 h-8 rounded-full bg-secondary/20 animate-pulse"></div>
+            <div className="ml-2">
+              <div className="h-3 bg-secondary/20 rounded w-16 animate-pulse"></div>
+              <div className="h-2 bg-secondary/10 rounded w-20 mt-1 animate-pulse"></div>
+            </div>
+          </div>
+        ) : !isLoggedIn ? (
+          <div 
+            className="flex items-center cursor-pointer hover:bg-card-hover rounded-md p-1 -m-1 transition-colors w-full"
+            onClick={handleLogin}
+          >
+            <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+              <User className="w-4 h-4 text-secondary" />
+            </div>
+            <div className="ml-2">
+              <div className="text-sm text-secondary">Log In / Sign Up</div>
+              <div className="text-xs text-secondary/70">Intră în cont</div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center flex-1 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                {userInfo?.email?.charAt(0)?.toUpperCase() || 'A'}
+              </div>
+              <div className="ml-2 min-w-0 flex-1">
+                <div className="text-sm font-medium text-primary truncate">
+                  {userInfo?.user_metadata?.name || userInfo?.email?.split('@')[0] || 'Admin'}
+                </div>
+                <div className="text-xs text-secondary truncate">
+                  {userInfo?.email || 'admin@example.com'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="ml-2 p-1 hover:bg-destructive/10 rounded-md text-destructive hover:text-destructive transition-colors flex-shrink-0"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

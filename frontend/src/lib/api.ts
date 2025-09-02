@@ -3,8 +3,17 @@
  * Handles all HTTP requests to the FastAPI backend
  */
 
+import { createClient } from '@supabase/supabase-js';
+
 // Base configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Supabase configuration
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+// Create Supabase client
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
@@ -17,6 +26,25 @@ interface ApiResponse<T> {
   total?: number;
 }
 
+// Auth helper function to get headers with token
+async function withAuthHeaders(headers: Record<string, string> = {}): Promise<Record<string, string>> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.access_token) {
+      return {
+        ...headers,
+        'Authorization': `Bearer ${session.access_token}`,
+      };
+    }
+    
+    return headers;
+  } catch (error) {
+    console.error('Auth header error:', error);
+    return headers;
+  }
+}
+
 // HTTP Client class
 class ApiClient {
   private baseURL: string;
@@ -27,7 +55,7 @@ class ApiClient {
     this.timeout = timeout;
   }
 
-  // Generic request method with timeout
+  // Generic request method with timeout and auth
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -36,18 +64,30 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
+      // Get headers with auth token
+      const authHeaders = await withAuthHeaders({
+        'Content-Type': 'application/json',
+        ...options.headers as Record<string, string>,
+      });
+
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers: authHeaders,
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        // Handle 401 specifically for auth redirects
+        if (response.status === 401) {
+          // Clear session and redirect to login
+          await supabase.auth.signOut();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          throw new Error('Authentication required');
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 

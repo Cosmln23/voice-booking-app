@@ -7,6 +7,7 @@ from app.models.appointment import (
     AppointmentListResponse, AppointmentStatus, AppointmentType, AppointmentPriority
 )
 from app.core.logging import get_logger
+from app.core.auth import require_user
 from app.database.crud_appointments import AppointmentCRUD
 from app.database import get_database
 
@@ -26,7 +27,8 @@ async def get_appointments(
     status: Optional[AppointmentStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud)
+    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user: dict = Depends(require_user)
 ):
     """Get appointments with optional filtering"""
     try:
@@ -56,7 +58,8 @@ async def get_appointments(
 @router.post("/appointments", response_model=AppointmentResponse)
 async def create_appointment(
     appointment_data: AppointmentCreate,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud)
+    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user: dict = Depends(require_user)
 ):
     """Create a new appointment"""
     try:
@@ -80,7 +83,8 @@ async def create_appointment(
 async def update_appointment(
     appointment_id: str, 
     appointment_data: AppointmentUpdate,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud)
+    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user: dict = Depends(require_user)
 ):
     """Update an existing appointment"""
     try:
@@ -106,7 +110,8 @@ async def update_appointment(
 @router.delete("/appointments/{appointment_id}", response_model=AppointmentResponse)
 async def delete_appointment(
     appointment_id: str,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud)
+    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user: dict = Depends(require_user)
 ):
     """Delete an appointment"""
     try:

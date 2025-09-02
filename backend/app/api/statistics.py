@@ -8,6 +8,7 @@ from app.models.statistics import (
     ChartData, ChartDataPoint, ChartType, StatsResponse, ChartsResponse
 )
 from app.core.logging import get_logger
+from app.core.auth import require_user
 from app.database.crud_statistics import StatisticsCRUD
 from app.database import get_database
 
@@ -29,7 +30,8 @@ async def get_statistics_crud(db = Depends(get_database)) -> StatisticsCRUD:
 @router.get("/stats", response_model=StatsResponse)
 async def get_statistics(
     period: StatsPeriod = Query(StatsPeriod.TODAY, description="Statistics period"),
-    statistics_crud: StatisticsCRUD = Depends(get_statistics_crud)
+    statistics_crud: StatisticsCRUD = Depends(get_statistics_crud),
+    user: dict = Depends(require_user)
 ):
     """Get dashboard statistics for specified period"""
     try:
@@ -52,7 +54,8 @@ async def get_statistics(
 @router.get("/stats/charts", response_model=ChartsResponse)
 async def get_charts(
     period: StatsPeriod = Query(StatsPeriod.WEEK, description="Charts period"),
-    statistics_crud: StatisticsCRUD = Depends(get_statistics_crud)
+    statistics_crud: StatisticsCRUD = Depends(get_statistics_crud),
+    user: dict = Depends(require_user)
 ):
     """Get chart data for specified period"""
     try:
