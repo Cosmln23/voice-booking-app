@@ -1,101 +1,30 @@
-from datetime import time
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.models.user import BusinessSettings, WorkingHours, NotificationSettings, AgentConfiguration
 from app.core.logging import get_logger
+from app.database.crud_business_settings import BusinessSettingsCRUD
+from app.database import get_database
 
 router = APIRouter()
 logger = get_logger(__name__)
 
-# Mock business settings data
-MOCK_SETTINGS = {
-    "name": "Salon Clasic",
-    "address": "Str. Victoriei nr. 25, București, România",
-    "phone": "+40721234567",
-    "email": "contact@salonclasic.ro",
-    "working_hours": [
-        {
-            "day_of_week": 0,  # Monday
-            "start_time": time(9, 0),
-            "end_time": time(18, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 1,  # Tuesday
-            "start_time": time(9, 0),
-            "end_time": time(18, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 2,  # Wednesday
-            "start_time": time(9, 0),
-            "end_time": time(18, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 3,  # Thursday
-            "start_time": time(9, 0),
-            "end_time": time(18, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 4,  # Friday
-            "start_time": time(9, 0),
-            "end_time": time(19, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 5,  # Saturday
-            "start_time": time(10, 0),
-            "end_time": time(16, 0),
-            "is_closed": False
-        },
-        {
-            "day_of_week": 6,  # Sunday
-            "start_time": time(9, 0),
-            "end_time": time(17, 0),
-            "is_closed": True
-        }
-    ],
-    "notifications": {
-        "email_notifications": True,
-        "sms_notifications": False,
-        "appointment_reminders": True,
-        "new_booking_alerts": True,
-        "system_updates": True
-    },
-    "agent_config": {
-        "enabled": False,
-        "model": "gpt-4o-realtime-preview",
-        "language": "ro-RO",
-        "voice": "nova",
-        "auto_booking": False,
-        "confirmation_required": True
-    },
-    "timezone": "Europe/Bucharest"
-}
+
+async def get_business_settings_crud(db = Depends(get_database)) -> BusinessSettingsCRUD:
+    """Dependency injection for BusinessSettingsCRUD"""
+    return BusinessSettingsCRUD(db.get_client())
+
 
 
 @router.get("/settings")
-async def get_business_settings():
+async def get_business_settings(
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Get current business settings"""
     try:
-        # Convert working hours
-        working_hours = [WorkingHours(**wh) for wh in MOCK_SETTINGS["working_hours"]]
+        settings = await settings_crud.get_business_settings()
         
-        # Create settings object
-        settings = BusinessSettings(
-            name=MOCK_SETTINGS["name"],
-            address=MOCK_SETTINGS["address"],
-            phone=MOCK_SETTINGS["phone"],
-            email=MOCK_SETTINGS["email"],
-            working_hours=working_hours,
-            notifications=NotificationSettings(**MOCK_SETTINGS["notifications"]),
-            agent_config=AgentConfiguration(**MOCK_SETTINGS["agent_config"]),
-            timezone=MOCK_SETTINGS["timezone"]
-        )
-        
-        logger.info("Business settings retrieved successfully")
+        logger.info("Business settings retrieved successfully from database",
+                   extra={"salon_name": settings.name})
         
         return {
             "success": True,
@@ -109,30 +38,24 @@ async def get_business_settings():
 
 
 @router.put("/settings")
-async def update_business_settings(settings: BusinessSettings):
+async def update_business_settings(
+    settings: BusinessSettings,
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Update business settings"""
     try:
-        # Update mock settings
-        MOCK_SETTINGS.update({
-            "name": settings.name,
-            "address": settings.address,
-            "phone": settings.phone,
-            "email": settings.email,
-            "working_hours": [wh.model_dump() for wh in settings.working_hours],
-            "notifications": settings.notifications.model_dump(),
-            "agent_config": settings.agent_config.model_dump(),
-            "timezone": settings.timezone
-        })
+        updated_settings = await settings_crud.update_business_settings(settings)
         
-        logger.info("Business settings updated successfully",
+        working_days = len([wh for wh in settings.working_hours if not wh.is_closed])
+        logger.info("Business settings updated successfully in database",
                    extra={
                        "salon_name": settings.name,
-                       "working_days": len([wh for wh in settings.working_hours if not wh.is_closed])
+                       "working_days": working_days
                    })
         
         return {
             "success": True,
-            "data": settings,
+            "data": updated_settings,
             "message": "Business settings updated successfully"
         }
         
@@ -142,10 +65,12 @@ async def update_business_settings(settings: BusinessSettings):
 
 
 @router.get("/settings/working-hours")
-async def get_working_hours():
+async def get_working_hours(
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Get business working hours"""
     try:
-        working_hours = [WorkingHours(**wh) for wh in MOCK_SETTINGS["working_hours"]]
+        working_hours = await settings_crud.get_working_hours()
         
         # Calculate working days
         working_days = len([wh for wh in working_hours if not wh.is_closed])
@@ -167,7 +92,10 @@ async def get_working_hours():
 
 
 @router.put("/settings/working-hours")
-async def update_working_hours(working_hours: list[WorkingHours]):
+async def update_working_hours(
+    working_hours: list[WorkingHours],
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Update business working hours"""
     try:
         if len(working_hours) != 7:
@@ -178,17 +106,17 @@ async def update_working_hours(working_hours: list[WorkingHours]):
         if days_provided != {0, 1, 2, 3, 4, 5, 6}:
             raise HTTPException(status_code=400, detail="Must provide working hours for days 0-6 (Monday-Sunday)")
         
-        # Update working hours
-        MOCK_SETTINGS["working_hours"] = [wh.model_dump() for wh in working_hours]
+        # Update working hours in database
+        updated_hours = await settings_crud.update_working_hours(working_hours)
         
         working_days = len([wh for wh in working_hours if not wh.is_closed])
         
-        logger.info(f"Working hours updated - {working_days} working days",
+        logger.info(f"Working hours updated in database - {working_days} working days",
                    extra={"working_days": working_days})
         
         return {
             "success": True,
-            "data": working_hours,
+            "data": updated_hours,
             "message": f"Working hours updated - {working_days} working days configured"
         }
         
@@ -200,10 +128,12 @@ async def update_working_hours(working_hours: list[WorkingHours]):
 
 
 @router.get("/settings/notifications")
-async def get_notification_settings():
+async def get_notification_settings(
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Get notification settings"""
     try:
-        notifications = NotificationSettings(**MOCK_SETTINGS["notifications"])
+        notifications = await settings_crud.get_notification_settings()
         
         return {
             "success": True,
@@ -217,10 +147,13 @@ async def get_notification_settings():
 
 
 @router.put("/settings/notifications")
-async def update_notification_settings(notifications: NotificationSettings):
+async def update_notification_settings(
+    notifications: NotificationSettings,
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Update notification settings"""
     try:
-        MOCK_SETTINGS["notifications"] = notifications.model_dump()
+        updated_notifications = await settings_crud.update_notification_settings(notifications)
         
         enabled_count = sum([
             notifications.email_notifications,
@@ -230,11 +163,11 @@ async def update_notification_settings(notifications: NotificationSettings):
             notifications.system_updates
         ])
         
-        logger.info(f"Notification settings updated - {enabled_count} notifications enabled")
+        logger.info(f"Notification settings updated in database - {enabled_count} notifications enabled")
         
         return {
             "success": True,
-            "data": notifications,
+            "data": updated_notifications,
             "message": f"Notification settings updated - {enabled_count} notifications enabled"
         }
         
@@ -244,10 +177,12 @@ async def update_notification_settings(notifications: NotificationSettings):
 
 
 @router.get("/settings/agent")
-async def get_agent_settings():
+async def get_agent_settings(
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Get voice agent settings"""
     try:
-        agent_config = AgentConfiguration(**MOCK_SETTINGS["agent_config"])
+        agent_config = await settings_crud.get_agent_settings()
         
         return {
             "success": True,
@@ -261,12 +196,15 @@ async def get_agent_settings():
 
 
 @router.put("/settings/agent")
-async def update_agent_settings(agent_config: AgentConfiguration):
+async def update_agent_settings(
+    agent_config: AgentConfiguration,
+    settings_crud: BusinessSettingsCRUD = Depends(get_business_settings_crud)
+):
     """Update voice agent settings"""
     try:
-        MOCK_SETTINGS["agent_config"] = agent_config.model_dump()
+        updated_config = await settings_crud.update_agent_settings(agent_config)
         
-        logger.info(f"Agent settings updated - enabled: {agent_config.enabled}",
+        logger.info(f"Agent settings updated in database - enabled: {agent_config.enabled}",
                    extra={
                        "enabled": agent_config.enabled,
                        "model": agent_config.model,
@@ -275,7 +213,7 @@ async def update_agent_settings(agent_config: AgentConfiguration):
         
         return {
             "success": True,
-            "data": agent_config,
+            "data": updated_config,
             "message": "Voice agent settings updated successfully"
         }
         

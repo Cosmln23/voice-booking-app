@@ -8,9 +8,16 @@ from app.models.service import (
     ServiceListResponse, ServiceStats, ServiceCategory, ServiceStatus
 )
 from app.core.logging import get_logger
+from app.database.crud_services import ServiceCRUD
+from app.database import get_database
 
 router = APIRouter()
 logger = get_logger(__name__)
+
+
+async def get_service_crud(db = Depends(get_database)) -> ServiceCRUD:
+    """Dependency injection for ServiceCRUD"""
+    return ServiceCRUD(db.get_client())
 
 # Mock data
 MOCK_SERVICES = [
@@ -96,26 +103,14 @@ MOCK_SERVICES = [
 
 
 @router.get("/services/stats")
-async def get_service_stats():
+async def get_service_stats(service_crud: ServiceCRUD = Depends(get_service_crud)):
     """Get service statistics"""
     try:
-        active_services = [s for s in MOCK_SERVICES if s["status"] == ServiceStatus.ACTIVE]
+        # Get statistics from database using CRUD
+        stats = await service_crud.get_service_stats()
         
-        # Calculate stats
-        total_services = len(MOCK_SERVICES)
-        active_count = len(active_services)
-        average_price = sum(s["price"] for s in active_services) / len(active_services) if active_services else 0
-        
-        # Find most popular service
-        most_popular = max(active_services, key=lambda s: s["popularity_score"], default=None)
-        most_popular_name = most_popular["name"] if most_popular else None
-        
-        stats = ServiceStats(
-            total_services=total_services,
-            active_services=active_count,
-            most_popular=most_popular_name,
-            average_price=round(average_price, 2)
-        )
+        logger.info("Retrieved service statistics from database",
+                   extra={"total_services": stats.total_services, "active_services": stats.active_services})
         
         return {
             "success": True,
@@ -133,30 +128,20 @@ async def get_services(
     category: Optional[ServiceCategory] = Query(None, description="Filter by category"),
     status: Optional[ServiceStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
-    offset: int = Query(0, ge=0, description="Number of results to skip")
+    offset: int = Query(0, ge=0, description="Number of results to skip"),
+    service_crud: ServiceCRUD = Depends(get_service_crud)
 ):
     """Get services with optional filtering"""
     try:
-        services = MOCK_SERVICES.copy()
+        # Get services from database using CRUD
+        service_objects, total = await service_crud.get_services(
+            category=category,
+            status=status,
+            limit=limit,
+            offset=offset
+        )
         
-        # Apply filters
-        if category:
-            services = [service for service in services if service["category"] == category]
-            
-        if status:
-            services = [service for service in services if service["status"] == status]
-        
-        # Sort by popularity (descending)
-        services.sort(key=lambda s: s["popularity_score"], reverse=True)
-        
-        # Apply pagination
-        total = len(services)
-        services = services[offset:offset + limit]
-        
-        # Convert to Pydantic models
-        service_objects = [Service(**service) for service in services]
-        
-        logger.info(f"Retrieved {len(service_objects)} services",
+        logger.info(f"Retrieved {len(service_objects)} services from database",
                    extra={"total": total, "filters": {"category": category, "status": status}})
         
         return ServiceListResponse(
@@ -172,25 +157,14 @@ async def get_services(
 
 
 @router.post("/services", response_model=ServiceResponse)
-async def create_service(service_data: ServiceCreate):
+async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud)):
     """Create a new service"""
     try:
-        # Create new service
-        new_service = {
-            "id": str(uuid4()),
-            "popularity_score": 0.0,
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
-            **service_data.model_dump()
-        }
-        
-        # Add to mock data
-        MOCK_SERVICES.append(new_service)
-        
-        service_obj = Service(**new_service)
+        # Create service in database using CRUD
+        service_obj = await service_crud.create_service(service_data)
         
         logger.info(f"Created service {service_obj.id}: {service_obj.name}",
-                   extra={"service_id": service_obj.id, "service_name": service_obj.name, "price": service_obj.price})
+                   extra={"service_id": str(service_obj.id), "service_name": service_obj.name, "price": service_obj.price})
         
         return ServiceResponse(
             success=True,
@@ -204,24 +178,18 @@ async def create_service(service_data: ServiceCreate):
 
 
 @router.put("/services/{service_id}", response_model=ServiceResponse)
-async def update_service(service_id: str, service_data: ServiceUpdate):
+async def update_service(service_id: str, service_data: ServiceUpdate, service_crud: ServiceCRUD = Depends(get_service_crud)):
     """Update an existing service"""
     try:
-        # Find service
-        service = next((s for s in MOCK_SERVICES if s["id"] == service_id), None)
+        # Update service in database using CRUD
+        service_obj = await service_crud.update_service(service_id, service_data)
         
-        if not service:
+        if not service_obj:
             raise HTTPException(status_code=404, detail="Service not found")
         
-        # Update fields
-        update_data = service_data.model_dump(exclude_unset=True)
-        service.update(update_data)
-        service["updated_at"] = datetime.now()
-        
-        service_obj = Service(**service)
-        
+        update_fields = list(service_data.model_dump(exclude_unset=True).keys())
         logger.info(f"Updated service {service_id}",
-                   extra={"service_id": service_id, "updated_fields": list(update_data.keys())})
+                   extra={"service_id": service_id, "updated_fields": update_fields})
         
         return ServiceResponse(
             success=True,
@@ -237,20 +205,17 @@ async def update_service(service_id: str, service_data: ServiceUpdate):
 
 
 @router.delete("/services/{service_id}", response_model=ServiceResponse)
-async def delete_service(service_id: str):
+async def delete_service(service_id: str, service_crud: ServiceCRUD = Depends(get_service_crud)):
     """Delete a service"""
     try:
-        # Find and remove service
-        global MOCK_SERVICES
-        service = next((s for s in MOCK_SERVICES if s["id"] == service_id), None)
+        # Delete service from database using CRUD
+        deleted = await service_crud.delete_service(service_id)
         
-        if not service:
+        if not deleted:
             raise HTTPException(status_code=404, detail="Service not found")
         
-        MOCK_SERVICES = [s for s in MOCK_SERVICES if s["id"] != service_id]
-        
         logger.info(f"Deleted service {service_id}",
-                   extra={"service_id": service_id, "service_name": service["name"]})
+                   extra={"service_id": service_id})
         
         return ServiceResponse(
             success=True,
