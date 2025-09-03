@@ -164,6 +164,7 @@ async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD 
     try:
         # Create service in database using CRUD with user isolation
         user_id = user.get("sub")  # Get user ID from JWT token
+        logger.info(f"Creating service for user_id: {user_id}, user: {user}")
         service_obj = await service_crud.create_service(service_data, user_id)
         
         logger.info(f"Created service {service_obj.id}: {service_obj.name}",
