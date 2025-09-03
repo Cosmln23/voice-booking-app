@@ -44,19 +44,20 @@ interface ServiceFormErrors {
 interface AddServiceModalProps {
   onClose: () => void
   onSave: (serviceData: ServiceFormData) => void
+  initialData?: Partial<ServiceFormData>
 }
 
-export default function AddServiceModal({ onClose, onSave }: AddServiceModalProps) {
+export default function AddServiceModal({ onClose, onSave, initialData }: AddServiceModalProps) {
   const [formData, setFormData] = useState<ServiceFormData>({
-    name: '',
-    category: 'Tuns',
-    description: '',
-    serviceDuration: 30,
-    bufferTime: 5,
-    price: '',
-    status: 'Activ',
-    isPackage: false,
-    packageItems: []
+    name: initialData?.name || '',
+    category: initialData?.category || 'Tuns',
+    description: initialData?.description || '',
+    serviceDuration: initialData?.serviceDuration || 30,
+    bufferTime: initialData?.bufferTime || 5,
+    price: initialData?.price || '',
+    status: initialData?.status || 'Activ',
+    isPackage: initialData?.isPackage || false,
+    packageItems: initialData?.packageItems || []
   })
   
   const [errors, setErrors] = useState<ServiceFormErrors>({})

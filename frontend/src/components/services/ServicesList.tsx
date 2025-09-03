@@ -657,7 +657,17 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
             setShowEditService(false)
             setServiceToEdit(null)
           }}
-          initialData={serviceToEdit}
+          initialData={{
+            name: serviceToEdit.name,
+            category: serviceToEdit.category,
+            description: serviceToEdit.description,
+            serviceDuration: serviceToEdit.serviceDuration,
+            bufferTime: serviceToEdit.bufferTime,
+            price: serviceToEdit.price,
+            status: serviceToEdit.status,
+            isPackage: serviceToEdit.isPackage || false,
+            packageItems: serviceToEdit.packageItems || []
+          }}
         />
       )}
 
