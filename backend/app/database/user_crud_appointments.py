@@ -76,12 +76,13 @@ class UserAppointmentCRUD:
                 # Convert database row to Pydantic model
                 appointment_data = {
                     "id": row["id"],
-                    "client_id": row["client_id"],
-                    "service_id": row["service_id"],
-                    "appointment_date": datetime.fromisoformat(
+                    "client_name": row["client_name"],
+                    "phone": row["phone"],
+                    "service": row["service_name"],
+                    "date": datetime.fromisoformat(
                         row["appointment_date"] + "T00:00:00"
                     ).date() if row.get("appointment_date") else None,
-                    "appointment_time": datetime.strptime(
+                    "time": datetime.strptime(
                         row["appointment_time"], "%H:%M:%S"
                     ).time() if row.get("appointment_time") else None,
                     "duration": row.get("duration"),
@@ -124,12 +125,13 @@ class UserAppointmentCRUD:
             
             appointment_data = {
                 "id": row["id"],
-                "client_id": row["client_id"],
-                "service_id": row["service_id"],
-                "appointment_date": datetime.fromisoformat(
+                "client_name": row["client_name"],
+                "phone": row["phone"],
+                "service": row["service_name"],
+                "date": datetime.fromisoformat(
                     row["appointment_date"] + "T00:00:00"
                 ).date() if row.get("appointment_date") else None,
-                "appointment_time": datetime.strptime(
+                "time": datetime.strptime(
                     row["appointment_time"], "%H:%M:%S"
                 ).time() if row.get("appointment_time") else None,
                 "duration": row.get("duration"),
@@ -159,8 +161,9 @@ class UserAppointmentCRUD:
             # Prepare data for database
             db_data = {
                 "id": str(uuid4()),
-                "client_id": appointment_data.client_id,
-                "service_id": appointment_data.service_id,
+                "client_name": appointment_data.client_name,
+                "phone": appointment_data.phone,
+                "service_name": appointment_data.service,
                 "appointment_date": appointment_data.date.isoformat() if appointment_data.date else None,
                 "appointment_time": appointment_data.time.strftime("%H:%M:%S") if appointment_data.time else None,
                 "duration": appointment_data.duration,
@@ -199,10 +202,12 @@ class UserAppointmentCRUD:
             # Prepare update data (only include non-None values)
             update_data = {"updated_at": datetime.now().isoformat()}
             
-            if appointment_data.client_id is not None:
-                update_data["client_id"] = appointment_data.client_id
-            if appointment_data.service_id is not None:
-                update_data["service_id"] = appointment_data.service_id
+            if appointment_data.client_name is not None:
+                update_data["client_name"] = appointment_data.client_name
+            if appointment_data.phone is not None:
+                update_data["phone"] = appointment_data.phone
+            if appointment_data.service is not None:
+                update_data["service_name"] = appointment_data.service
             if appointment_data.date is not None:
                 update_data["appointment_date"] = appointment_data.date.isoformat()
             if appointment_data.time is not None:
