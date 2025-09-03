@@ -9,7 +9,9 @@ from app.models.appointment import (
 from app.core.logging import get_logger
 from app.core.auth import require_user
 from app.database.crud_appointments import AppointmentCRUD
+from app.database.user_crud_appointments import UserAppointmentCRUD
 from app.database import get_database
+from app.api.dependencies import get_user_appointment_crud
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -27,14 +29,14 @@ async def get_appointments(
     status: Optional[AppointmentStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user_appointment_crud: UserAppointmentCRUD = Depends(get_user_appointment_crud),
     user: dict = Depends(require_user)
 ):
-    """Get appointments with optional filtering"""
+    """Get appointments with optional filtering for current user"""
     try:
-        # Get appointments from database using CRUD
-        appointment_objects, total = await appointment_crud.get_appointments(
-            date_filter=date_filter,
+        # Get appointments from database using user-isolated CRUD
+        appointment_objects, total = await user_appointment_crud.get_appointments(
+            appointment_date=date_filter,
             status=status,
             limit=limit,
             offset=offset
@@ -58,12 +60,12 @@ async def get_appointments(
 @router.post("/appointments", response_model=AppointmentResponse)
 async def create_appointment(
     appointment_data: AppointmentCreate,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user_appointment_crud: UserAppointmentCRUD = Depends(get_user_appointment_crud),
     user: dict = Depends(require_user)
 ):
-    """Create a new appointment"""
+    """Create a new appointment for current user"""
     try:
-        appointment_obj = await appointment_crud.create_appointment(appointment_data)
+        appointment_obj = await user_appointment_crud.create_appointment(appointment_data)
         
         logger.info(f"Created appointment {appointment_obj.id} for {appointment_obj.client_name}",
                    extra={"appointment_id": appointment_obj.id, "client": appointment_obj.client_name})
@@ -83,12 +85,12 @@ async def create_appointment(
 async def update_appointment(
     appointment_id: str, 
     appointment_data: AppointmentUpdate,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user_appointment_crud: UserAppointmentCRUD = Depends(get_user_appointment_crud),
     user: dict = Depends(require_user)
 ):
-    """Update an existing appointment"""
+    """Update an existing appointment for current user"""
     try:
-        appointment_obj = await appointment_crud.update_appointment(appointment_id, appointment_data)
+        appointment_obj = await user_appointment_crud.update_appointment(appointment_id, appointment_data)
         
         update_data = appointment_data.model_dump(exclude_unset=True)
         logger.info(f"Updated appointment {appointment_id}",
@@ -110,12 +112,12 @@ async def update_appointment(
 @router.delete("/appointments/{appointment_id}", response_model=AppointmentResponse)
 async def delete_appointment(
     appointment_id: str,
-    appointment_crud: AppointmentCRUD = Depends(get_appointment_crud),
+    user_appointment_crud: UserAppointmentCRUD = Depends(get_user_appointment_crud),
     user: dict = Depends(require_user)
 ):
-    """Delete an appointment"""
+    """Delete an appointment for current user"""
     try:
-        deleted = await appointment_crud.delete_appointment(appointment_id)
+        deleted = await user_appointment_crud.delete_appointment(appointment_id)
         
         if not deleted:
             raise HTTPException(status_code=404, detail="Appointment not found")
