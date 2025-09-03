@@ -186,6 +186,39 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showDropdownForService])
 
+  // Helper to normalize service data for API
+  const toServiceCreatePayload = (s: Service) => {
+    const normStatus = (() => {
+      const raw = String(s.status ?? '').toLowerCase()
+      if (raw === 'active' || raw === 'inactive') return raw
+      return s.status === 'Activ' ? 'active' : 'inactive'
+    })()
+
+    const normCategory = (() => {
+      const raw = String(s.category ?? '').toLowerCase()
+      if (raw === 'package' || raw === 'individual') return raw
+      return raw === 'pachete' || s.isPackage ? 'package' : 'individual'
+    })()
+
+    const price = typeof s.price === 'string' 
+      ? parseFloat(s.price.replace(/[^\d.,]/g, '').replace(',', '.'))
+      : s.price
+
+    const duration = typeof (s as any).duration === 'string' && /^\d+min$/.test((s as any).duration)
+      ? (s as any).duration
+      : `${s.serviceDuration ?? 30}min`
+
+    return {
+      name: `${s.name} (Copie)`,
+      price,
+      currency: 'RON',
+      duration,
+      category: normCategory as 'individual' | 'package',
+      status: normStatus as 'active' | 'inactive',
+      description: s.description ?? ''
+    }
+  }
+
   // Action handlers
   const handleEditService = (service: Service) => {
     setServiceToEdit(service)
@@ -194,18 +227,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
   const handleDuplicateService = async (service: Service) => {
     try {
-      const serviceData = {
-        name: `${service.name} (Copie)`,
-        price: typeof service.price === 'string' 
-          ? parseFloat(service.price.replace(/[^\d.,]/g, '').replace(',', '.'))
-          : service.price,
-        currency: 'RON',
-        duration: `${service.serviceDuration}min`,
-        category: (service.category.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
-        status: service.status === 'Activ' ? 'active' : 'inactive' as ServiceStatus,
-        description: service.description
-      }
-      await createService(serviceData)
+      await createService(toServiceCreatePayload(service))
+      await fetchServices()  // Refresh lista după creare
     } catch (error) {
       console.error('Error duplicating service:', error)
     }
@@ -221,6 +244,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     
     try {
       await deleteService(serviceToDelete.id)
+      await fetchServices()  // Refresh lista după ștergere
       setShowDeleteConfirm(false)
       setServiceToDelete(null)
     } catch (error) {
@@ -230,8 +254,10 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
   const categories = ['Tuns', 'Barbă', 'Tratamente', 'Pachete']
 
-  // Use API services if available, fallback to dummy data
-  const servicesToUse = apiServices.length > 0 ? apiServices : convertedServices
+  // Use only API services - no mock data fallback
+  const loading = isLoading && apiServices.length === 0
+  const hasData = apiServices.length > 0
+  const servicesToUse = apiServices
   
   const filteredServices = servicesToUse
     .filter(service => {
@@ -486,7 +512,19 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
             {/* Table Body */}
             <div className="divide-y divide-border">
-              {filteredServices.map((service) => (
+              {loading && (
+                <div className="p-8 text-center text-secondary">
+                  Se încarcă serviciile...
+                </div>
+              )}
+              
+              {!loading && !hasData && (
+                <div className="p-8 text-center text-secondary">
+                  Nu există servicii încă.
+                </div>
+              )}
+              
+              {!loading && hasData && filteredServices.map((service) => (
                 <div key={service.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors group">
                   {/* Service Info */}
                   <div className="col-span-4">
@@ -559,7 +597,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
                   {/* Actions */}
                   <div className="col-span-1 text-center">
-                    <div className="flex items-center justify-center gap-1">
+                    <div className="relative flex items-center justify-center gap-1">
                       <button 
                         onClick={() => setSelectedService(service as Service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
@@ -583,25 +621,29 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                       </button>
                       <button 
                         onClick={() => setShowDropdownForService(showDropdownForService === service.id ? null : service.id)}
-                        className="p-1 text-secondary hover:text-primary rounded transition-colors relative"
+                        className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Mai multe opțiuni"
+                        type="button"
                       >
                         <MoreHorizontal className="w-4 h-4" />
-                        {showDropdownForService === service.id && (
-                          <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[120px]">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteService(service as Service)
-                                setShowDropdownForService(null)
-                              }}
-                              className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
-                            >
-                              Șterge
-                            </button>
-                          </div>
-                        )}
                       </button>
+                      
+                      {/* Dropdown în afara butonului */}
+                      {showDropdownForService === service.id && (
+                        <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[140px]">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteService(service as Service)
+                              setShowDropdownForService(null)
+                            }}
+                            className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors text-left"
+                          >
+                            Șterge
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
