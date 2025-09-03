@@ -26,7 +26,7 @@ import {
 import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
-import type { Service as ApiService } from '../../types'
+import type { Service as ApiService, ServiceStatus, ServiceCategory } from '../../types'
 
 interface Service {
   id: string
@@ -192,12 +192,14 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
           bValue = b.category
           break
         case 'duration':
-          aValue = a.totalDuration
-          bValue = b.totalDuration
+          aValue = 'totalDuration' in a ? a.totalDuration : parseInt(a.duration?.replace('min', '') || '0')
+          bValue = 'totalDuration' in b ? b.totalDuration : parseInt(b.duration?.replace('min', '') || '0')
           break
         case 'price':
-          aValue = parseInt(a.price.replace(/[^\d]/g, ''))
-          bValue = parseInt(b.price.replace(/[^\d]/g, ''))
+          const aPriceStr = typeof a.price === 'string' ? a.price : String(a.price)
+          const bPriceStr = typeof b.price === 'string' ? b.price : String(b.price)
+          aValue = parseInt(aPriceStr.replace(/[^\d]/g, ''))
+          bValue = parseInt(bPriceStr.replace(/[^\d]/g, ''))
           break
         default:
           return 0
@@ -215,12 +217,14 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
       // Convert form data to backend format
       const servicePayload = {
         name: serviceData.name.trim(),
-        price: parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.')), // Extract number from price
+        price: typeof serviceData.price === 'string' 
+          ? parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.'))
+          : serviceData.price, // Extract number from price
         currency: 'RON',
         duration: `${serviceData.serviceDuration}min`, // Convert minutes to "Xmin" format
-        category: serviceData.category.toLowerCase(), // Map to backend enum
+        category: (serviceData.category.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
         description: serviceData.description?.trim() || undefined,
-        status: serviceData.status === 'Inactiv' ? 'inactive' : 'active'
+        status: (serviceData.status === 'Inactiv' ? 'inactive' : 'active') as ServiceStatus
       }
       
       await createService(servicePayload)
@@ -234,8 +238,11 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     }
   }
 
-  const getCategoryIcon = (category: Service['category']) => {
-    switch (category) {
+  const getCategoryIcon = (category: Service['category'] | ServiceCategory) => {
+    // Map ServiceCategory to display category
+    const displayCategory = category === 'individual' ? 'Tuns' : category === 'package' ? 'Pachete' : category;
+    
+    switch (displayCategory) {
       case 'Tuns':
         return <Scissors className="w-4 h-4" />
       case 'Barbă':
@@ -249,7 +256,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     }
   }
 
-  const getStatusBadge = (status: Service['status']) => {
+  const getStatusBadge = (status: Service['status'] | ServiceStatus) => {
+    const displayStatus = status === 'active' ? 'Activ' : status === 'inactive' ? 'Inactiv' : status;
     const styles = {
       Activ: 'bg-secondary/20 text-primary border-border',
       Inactiv: 'bg-secondary/20 text-secondary border-border'
@@ -258,9 +266,9 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     return (
       <span className={clsx(
         'inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border',
-        styles[status]
+        styles[displayStatus as keyof typeof styles]
       )}>
-        {status}
+        {displayStatus}
       </span>
     )
   }
@@ -428,7 +436,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-primary">{service.name}</span>
-                          {service.isPackage && (
+                          {'isPackage' in service && service.isPackage && (
                             <span className="inline-flex items-center px-1 py-0.5 rounded text-xs bg-secondary/20 text-secondary border border-border">
                               <Package className="w-3 h-3 mr-1" />
                               Pachet
@@ -440,7 +448,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                             {service.description}
                           </div>
                         )}
-                        {service.isPackage && service.packageItems && (
+                        {'isPackage' in service && service.isPackage && 'packageItems' in service && service.packageItems && (
                           <div className="text-xs text-secondary mt-1">
                             Include: {service.packageItems.join(', ')}
                           </div>
@@ -462,18 +470,24 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-secondary" />
                       <span className="font-semibold text-primary">
-                        {formatDuration(service.totalDuration)}
+                        {'totalDuration' in service ? formatDuration(service.totalDuration) : service.duration}
                       </span>
                     </div>
                     <div className="text-xs text-secondary">
-                      Serviciu: {formatDuration(service.serviceDuration)} + Tampon: {formatDuration(service.bufferTime)}
+                      {'serviceDuration' in service && 'bufferTime' in service 
+                        ? `Serviciu: ${formatDuration(service.serviceDuration)} + Tampon: ${formatDuration(service.bufferTime)}`
+                        : `Durata: ${service.duration}`}
                     </div>
                   </div>
 
                   {/* Price */}
                   <div className="col-span-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-primary">{service.price.replace(' RON', '').replace('RON', '')} RON</span>
+                      <span className="font-semibold text-primary">
+                        {typeof service.price === 'string' 
+                          ? service.price.replace(' RON', '').replace('RON', '') + ' RON'
+                          : service.price + ' RON'}
+                      </span>
                     </div>
                   </div>
 
@@ -486,7 +500,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   <div className="col-span-1 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <button 
-                        onClick={() => setSelectedService(service)}
+                        onClick={() => setSelectedService(service as Service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Vezi detalii"
                       >

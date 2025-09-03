@@ -183,7 +183,7 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
         name: clientData.name.trim(),
         phone: normalizePhone(clientData.phone),
         email: clientData.email.trim(),
-        status: clientData.status === 'Inactive' ? 'inactive' : 'active', // Map to backend enum
+        status: (clientData.status === 'Inactive' ? 'inactive' : 'active') as ClientStatus, // Map to backend enum
         notes: clientData.notes?.trim() || undefined
         // Note: preferences not supported in backend model
       }
