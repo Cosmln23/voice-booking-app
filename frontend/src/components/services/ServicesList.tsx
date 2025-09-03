@@ -676,7 +676,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
           <div className="bg-card border border-border rounded-lg p-6 max-w-md mx-4">
             <h3 className="text-lg font-semibold text-primary mb-4">Confirmă ștergerea</h3>
             <p className="text-secondary mb-6">
-              Ești sigur că vrei să ștergi serviciul "{serviceToDelete.name}"? Această acțiune nu poate fi anulată.
+              Ești sigur că vrei să ștergi serviciul &quot;{serviceToDelete.name}&quot;? Această acțiune nu poate fi anulată.
             </p>
             <div className="flex gap-3 justify-end">
               <button
