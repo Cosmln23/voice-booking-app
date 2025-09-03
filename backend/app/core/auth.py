@@ -7,10 +7,11 @@ Recommended by ChatGPT for production environments
 import jwt
 from jwt import PyJWKClient
 from typing import Dict, Any
-from fastapi import HTTPException, Depends, Request
+from fastapi import HTTPException, Depends, Request, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import settings
 from app.core.logging import get_logger
+from supabase import create_client, Client
 
 logger = get_logger(__name__)
 security = HTTPBearer()
@@ -136,6 +137,27 @@ async def require_user(
     except Exception as e:
         logger.error(f"Authentication error: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
+
+
+def get_bearer_token(authorization: str | None = Header(None)):
+    """
+    Extract Bearer token from Authorization header
+    Usage: jwt: str = Depends(get_bearer_token)
+    """
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Missing bearer token")
+    return authorization.split(" ", 1)[1]
+
+
+def supabase_as_user(jwt: str) -> Client:
+    """
+    Create Supabase client authenticated as specific user
+    This ensures RLS policies work with auth.uid()
+    """
+    client = create_client(settings.supabase_url, settings.supabase_anon_key)
+    # CRITICAL: Attach user JWT to PostgREST requests
+    client.postgrest.auth(jwt)
+    return client
 
 
 # Optional: Admin role check

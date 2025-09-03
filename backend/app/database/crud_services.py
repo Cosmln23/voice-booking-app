@@ -152,11 +152,7 @@ class ServiceCRUD:
             # Add created_by for RLS policy compliance
             if user_id:
                 db_data["created_by"] = user_id
-                logger.info(f"Adding created_by field: {user_id}")
-            else:
-                logger.warning("No user_id provided for service creation - RLS may fail")
             
-            logger.info(f"Service data before insert: {db_data}")
             # Insert service
             response = self.client.table(self.table).insert(db_data).execute()
             

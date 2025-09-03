@@ -8,7 +8,7 @@ from app.models.service import (
     ServiceListResponse, ServiceStats, ServiceCategory, ServiceStatus
 )
 from app.core.logging import get_logger
-from app.core.auth import require_user
+from app.core.auth import require_user, get_bearer_token, supabase_as_user
 from app.database.crud_services import ServiceCRUD
 from app.database import get_database
 
@@ -16,9 +16,10 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
-async def get_service_crud(db = Depends(get_database)) -> ServiceCRUD:
-    """Dependency injection for ServiceCRUD"""
-    return ServiceCRUD(db.get_client())
+async def get_service_crud_authenticated(jwt: str = Depends(get_bearer_token)) -> ServiceCRUD:
+    """Dependency injection for ServiceCRUD with user authentication"""
+    client = supabase_as_user(jwt)
+    return ServiceCRUD(client)
 
 # Mock data
 MOCK_SERVICES = [
@@ -104,7 +105,7 @@ MOCK_SERVICES = [
 
 
 @router.get("/services/stats")
-async def get_service_stats(service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
+async def get_service_stats(service_crud: ServiceCRUD = Depends(get_service_crud_authenticated), user: dict = Depends(require_user)):
     """Get service statistics"""
     try:
         # Get statistics from database using CRUD
@@ -130,7 +131,7 @@ async def get_services(
     status: Optional[ServiceStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    service_crud: ServiceCRUD = Depends(get_service_crud),
+    service_crud: ServiceCRUD = Depends(get_service_crud_authenticated),
     user: dict = Depends(require_user)
 ):
     """Get services with optional filtering"""
@@ -164,7 +165,6 @@ async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD 
     try:
         # Create service in database using CRUD with user isolation
         user_id = user.get("user_id")  # Get user ID from JWT token
-        logger.info(f"Creating service for user_id: {user_id}, user: {user}")
         service_obj = await service_crud.create_service(service_data, user_id)
         
         logger.info(f"Created service {service_obj.id}: {service_obj.name}",
