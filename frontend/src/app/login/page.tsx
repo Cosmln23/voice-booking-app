@@ -11,9 +11,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -25,22 +26,41 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (isSignUp) {
+        // Sign up
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (error) {
-        throw error;
-      }
+        if (error) {
+          throw error;
+        }
 
-      if (data.session) {
-        // Redirect to admin dashboard
-        router.push('/admin');
-        router.refresh();
+        if (data.user) {
+          setError('');
+          alert('Verifică email-ul pentru confirmarea contului, apoi te poți loga.');
+          setIsSignUp(false);
+        }
+      } else {
+        // Sign in
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session) {
+          // Redirect to admin dashboard
+          router.push('/admin');
+          router.refresh();
+        }
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Auth error:', error);
       setError(error.message || 'Eroare la autentificare');
     } finally {
       setLoading(false);
@@ -56,10 +76,10 @@ export default function LoginPage() {
             <LogIn className="h-8 w-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Voice Booking Admin
+            {isSignUp ? 'Creare Cont Admin' : 'Voice Booking Admin'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Autentifică-te pentru a accesa panoul de administrare
+            {isSignUp ? 'Creează un cont nou pentru administrare' : 'Autentifică-te pentru a accesa panoul de administrare'}
           </p>
         </div>
 
@@ -70,8 +90,8 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-6">
+        {/* Auth Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -137,16 +157,34 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Se autentifică...
+                {isSignUp ? 'Se creează contul...' : 'Se autentifică...'}
               </>
             ) : (
               <>
                 <LogIn className="h-4 w-4 mr-2" />
-                Autentificare
+                {isSignUp ? 'Creare Cont' : 'Autentificare'}
               </>
             )}
           </button>
         </form>
+
+        {/* Toggle Sign Up / Login */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {isSignUp ? 'Ai deja cont?' : 'Nu ai cont?'}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError('');
+              }}
+              className="ml-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium"
+              disabled={loading}
+            >
+              {isSignUp ? 'Autentifică-te' : 'Creează cont'}
+            </button>
+          </p>
+        </div>
 
         {/* Footer */}
         <div className="mt-8 text-center">
