@@ -19,14 +19,11 @@ import {
 
 interface ServiceFormData {
   name: string
-  category: 'Tuns' | 'Barbă' | 'Tratamente' | 'Pachete'
+  category: 'individual' | 'package'
   description: string
-  serviceDuration: number
-  bufferTime: number
+  serviceDuration: number  // Pentru UI, dar se convertește la duration
   price: string
-  status: 'Activ' | 'Inactiv'
-  isPackage: boolean
-  packageItems: string[]
+  status: 'active' | 'inactive'
 }
 
 interface ServiceFormErrors {
@@ -34,11 +31,8 @@ interface ServiceFormErrors {
   category?: string
   description?: string
   serviceDuration?: string
-  bufferTime?: string
   price?: string
   status?: string
-  isPackage?: string
-  packageItems?: string
 }
 
 interface AddServiceModalProps {
@@ -50,27 +44,14 @@ interface AddServiceModalProps {
 export default function AddServiceModal({ onClose, onSave, initialData }: AddServiceModalProps) {
   const [formData, setFormData] = useState<ServiceFormData>({
     name: initialData?.name || '',
-    category: initialData?.category || 'Tuns',
+    category: initialData?.category || 'individual',
     description: initialData?.description || '',
     serviceDuration: initialData?.serviceDuration || 30,
-    bufferTime: initialData?.bufferTime || 5,
     price: initialData?.price || '',
-    status: initialData?.status || 'Activ',
-    isPackage: initialData?.isPackage || false,
-    packageItems: initialData?.packageItems || []
+    status: initialData?.status || 'active'
   })
   
   const [errors, setErrors] = useState<ServiceFormErrors>({})
-  const [newPackageItem, setNewPackageItem] = useState('')
-
-  const availableServices = [
-    'Tunsoare Clasică',
-    'Tunsoare + Styling', 
-    'Aranjare Barbă',
-    'Barbă Completă',
-    'Tratament Păr Anti-Mătreață',
-    'Masaj Scalp Relaxant'
-  ]
 
   const validateForm = () => {
     const newErrors: ServiceFormErrors = {}
@@ -92,14 +73,6 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
     if (formData.serviceDuration < 5) {
       newErrors.serviceDuration = 'Durata minimă este 5 minute'
     }
-
-    if (formData.bufferTime < 0) {
-      newErrors.bufferTime = 'Timpul tampon nu poate fi negativ'
-    }
-
-    if (formData.isPackage && formData.packageItems.length === 0) {
-      newErrors.packageItems = 'Un pachet trebuie să conțină cel puțin un serviciu'
-    }
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -117,22 +90,6 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }))
     }
-  }
-
-  const addPackageItem = () => {
-    if (newPackageItem.trim() && !formData.packageItems.includes(newPackageItem.trim())) {
-      updateFormData('packageItems', [...formData.packageItems, newPackageItem.trim()])
-      setNewPackageItem('')
-    }
-  }
-
-  const removePackageItem = (index: number) => {
-    const newItems = formData.packageItems.filter((_, i) => i !== index)
-    updateFormData('packageItems', newItems)
-  }
-
-  const getTotalDuration = () => {
-    return formData.serviceDuration + formData.bufferTime
   }
 
   const formatDuration = (minutes: number) => {
@@ -212,10 +169,8 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
                     onChange={(e) => updateFormData('category', e.target.value)}
                     className="w-full px-4 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
                   >
-                    <option value="Tuns">Tuns</option>
-                    <option value="Barbă">Barbă</option>
-                    <option value="Tratamente">Tratamente</option>
-                    <option value="Pachete">Pachete</option>
+                    <option value="individual">Individual</option>
+                    <option value="package">Pachet</option>
                   </select>
                 </div>
 
@@ -229,8 +184,8 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
                     onChange={(e) => updateFormData('status', e.target.value)}
                     className="w-full px-4 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
                   >
-                    <option value="Activ">Activ</option>
-                    <option value="Inactiv">Inactiv</option>
+                    <option value="active">Activ</option>
+                    <option value="inactive">Inactiv</option>
                   </select>
                 </div>
 
@@ -292,38 +247,13 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
                   )}
                 </div>
 
-                {/* Buffer Time */}
+                {/* Duration Display */}
                 <div>
-                  <label className="block text-sm font-medium text-primary mb-2">
-                    Timp Tampon (minute)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="5"
-                    value={formData.bufferTime}
-                    onChange={(e) => updateFormData('bufferTime', parseInt(e.target.value) || 0)}
-                    className={clsx(
-                      'w-full px-4 py-2 bg-background border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors',
-                      errors.bufferTime ? 'border-red-500' : 'border-border'
-                    )}
-                  />
-                  <p className="mt-1 text-xs text-secondary">Pentru curățenie/pregătire</p>
-                  {errors.bufferTime && (
-                    <p className="mt-1 text-sm text-secondary flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.bufferTime}
-                    </p>
-                  )}
-                </div>
-
-                {/* Total Duration Display */}
-                <div className="lg:col-span-2">
                   <div className="p-3 bg-secondary/10 rounded-2xl border border-secondary/20">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-secondary">Durată Totală în Agendă:</span>
+                      <span className="text-sm text-secondary">Durată Serviciu:</span>
                       <span className="font-semibold text-primary text-lg">
-                        {formatDuration(getTotalDuration())}
+                        {formatDuration(formData.serviceDuration)}
                       </span>
                     </div>
                   </div>
@@ -354,99 +284,6 @@ export default function AddServiceModal({ onClose, onSave, initialData }: AddSer
               </div>
             </div>
 
-            {/* Package Configuration */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-primary flex items-center gap-2">
-                  <Package className="w-4 h-4" />
-                  Configurație Pachet
-                </h3>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isPackage"
-                    checked={formData.isPackage}
-                    onChange={(e) => updateFormData('isPackage', e.target.checked)}
-                    className="rounded"
-                  />
-                  <label htmlFor="isPackage" className="text-sm text-secondary cursor-pointer">
-                    Este pachet de servicii
-                  </label>
-                </div>
-              </div>
-
-              {formData.isPackage && (
-                <div className="space-y-4">
-                  <div className="p-3 bg-secondary/10 rounded-2xl">
-                    <p className="text-sm text-secondary">
-                      <strong className="text-primary">Pachet:</strong> Combină mai multe servicii individuale cu un preț și o durată totală optimizate.
-                    </p>
-                  </div>
-
-                  {/* Add Package Item */}
-                  <div>
-                    <label className="block text-sm font-medium text-primary mb-2">
-                      Adaugă Servicii în Pachet
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={newPackageItem}
-                        onChange={(e) => setNewPackageItem(e.target.value)}
-                        className="flex-1 px-4 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
-                      >
-                        <option value="">Selectează un serviciu...</option>
-                        {availableServices
-                          .filter(service => !formData.packageItems.includes(service))
-                          .map((service, index) => (
-                            <option key={index} value={service}>
-                              {service}
-                            </option>
-                          ))
-                        }
-                      </select>
-                      <button
-                        type="button"
-                        onClick={addPackageItem}
-                        disabled={!newPackageItem.trim()}
-                        className="px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Package Items List */}
-                  {formData.packageItems.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-primary mb-2">
-                        Servicii în Pachet:
-                      </label>
-                      <div className="space-y-2">
-                        {formData.packageItems.map((item, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-card rounded-2xl">
-                            <span className="text-primary">{item}</span>
-                            <button
-                              type="button"
-                              onClick={() => removePackageItem(index)}
-                              className="p-1 text-secondary hover:text-primary transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {errors.packageItems && (
-                    <p className="text-sm text-secondary flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.packageItems}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Footer Actions */}

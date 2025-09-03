@@ -28,101 +28,6 @@ import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
 import type { Service, ServiceStatus, ServiceCategory } from '../../types'
 
-// Mock data removed - using only API data
-const convertedServices: Service[] = [
-  {
-    id: '1',
-    name: 'Tunsoare Clasică',
-    category: 'Tuns',
-    description: 'Tunsoare clasică pentru bărbați cu spălat și aranjat',
-    serviceDuration: 30,
-    bufferTime: 10,
-    totalDuration: 40,
-    price: '45 RON',
-    status: 'Activ'
-  },
-  {
-    id: '2',
-    name: 'Tunsoare + Styling',
-    category: 'Tuns', 
-    description: 'Tunsoare modernă cu styling și produse premium',
-    serviceDuration: 45,
-    bufferTime: 15,
-    totalDuration: 60,
-    price: '65 RON',
-    status: 'Activ'
-  },
-  {
-    id: '3',
-    name: 'Aranjare Barbă',
-    category: 'Barbă',
-    description: 'Aranjare și conturare barbă cu produse profesionale',
-    serviceDuration: 20,
-    bufferTime: 5,
-    totalDuration: 25,
-    price: '25 RON',
-    status: 'Activ'
-  },
-  {
-    id: '4',
-    name: 'Barbă Completă',
-    category: 'Barbă',
-    description: 'Aranjare barbă cu spălat, hidratare și styling complet',
-    serviceDuration: 35,
-    bufferTime: 10,
-    totalDuration: 45,
-    price: '40 RON',
-    status: 'Activ'
-  },
-  {
-    id: '5',
-    name: 'Tratament Păr Anti-Mătreață',
-    category: 'Tratamente',
-    description: 'Tratament specializat pentru scalp sensibil și mătreață',
-    serviceDuration: 40,
-    bufferTime: 5,
-    totalDuration: 45,
-    price: '85 RON',
-    status: 'Activ'
-  },
-  {
-    id: '6',
-    name: 'Masaj Scalp Relaxant',
-    category: 'Tratamente',
-    description: 'Masaj terapeutic pentru relaxare și stimulare circulație',
-    serviceDuration: 25,
-    bufferTime: 5,
-    totalDuration: 30,
-    price: '50 RON',
-    status: 'Inactiv'
-  },
-  {
-    id: '7',
-    name: 'Pachet Complet Tuns + Barbă',
-    category: 'Pachete',
-    description: 'Combinație tunsoare clasică cu aranjare barbă',
-    serviceDuration: 50,
-    bufferTime: 15,
-    totalDuration: 65,
-    price: '60 RON',
-    status: 'Activ',
-    isPackage: true,
-    packageItems: ['Tunsoare Clasică', 'Aranjare Barbă']
-  },
-  {
-    id: '8',
-    name: 'Pachet Premium Grooming',
-    category: 'Pachete',
-    description: 'Experiență completă: tuns, barbă și tratament scalp',
-    serviceDuration: 90,
-    bufferTime: 20,
-    totalDuration: 110,
-    price: '120 RON',
-    status: 'Activ',
-    isPackage: true,
-    packageItems: ['Tunsoare + Styling', 'Barbă Completă', 'Masaj Scalp']
-  }
-]
 
 interface ServicesListProps {
   isMobile?: boolean
@@ -175,33 +80,13 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
   // Helper to normalize service data for API
   const toServiceCreatePayload = (s: Service) => {
-    const normStatus = (() => {
-      const raw = String(s.status ?? '').toLowerCase()
-      if (raw === 'active' || raw === 'inactive') return raw
-      return s.status === 'Activ' ? 'active' : 'inactive'
-    })()
-
-    const normCategory = (() => {
-      const raw = String(s.category ?? '').toLowerCase()
-      if (raw === 'package' || raw === 'individual') return raw
-      return raw === 'pachete' || s.isPackage ? 'package' : 'individual'
-    })()
-
-    const price = typeof s.price === 'string' 
-      ? parseFloat(s.price.replace(/[^\d.,]/g, '').replace(',', '.'))
-      : s.price
-
-    const duration = typeof (s as any).duration === 'string' && /^\d+min$/.test((s as any).duration)
-      ? (s as any).duration
-      : `${s.serviceDuration ?? 30}min`
-
     return {
       name: `${s.name} (Copie)`,
-      price,
-      currency: 'RON',
-      duration,
-      category: normCategory as 'individual' | 'package',
-      status: normStatus as 'active' | 'inactive',
+      price: s.price,
+      currency: s.currency,
+      duration: s.duration,
+      category: s.category,
+      status: s.status,
       description: s.description ?? ''
     }
   }
@@ -270,10 +155,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
           bValue = parseInt(b.duration?.replace('min', '') || '0')
           break
         case 'price':
-          const aPriceStr = typeof a.price === 'string' ? a.price : String(a.price)
-          const bPriceStr = typeof b.price === 'string' ? b.price : String(b.price)
-          aValue = parseFloat(aPriceStr.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-          bValue = parseFloat(bPriceStr.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+          aValue = a.price
+          bValue = b.price
           break
         default:
           return 0
@@ -293,12 +176,12 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
         name: serviceData.name.trim(),
         price: typeof serviceData.price === 'string' 
           ? parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.'))
-          : serviceData.price, // Extract number from price
+          : serviceData.price,
         currency: 'RON',
-        duration: `${serviceData.serviceDuration}min`, // Convert minutes to "Xmin" format
-        category: (serviceData.category.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
+        duration: `${serviceData.serviceDuration || 30}min`,
+        category: serviceData.category as ServiceCategory,
         description: serviceData.description?.trim() || undefined,
-        status: (serviceData.status === 'Inactiv' ? 'inactive' : 'active') as ServiceStatus
+        status: serviceData.status as ServiceStatus
       }
       
       await createService(servicePayload)
@@ -312,26 +195,19 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     }
   }
 
-  const getCategoryIcon = (category: Service['category'] | ServiceCategory) => {
-    // Map ServiceCategory to display category
-    const displayCategory = category === 'individual' ? 'Tuns' : category === 'package' ? 'Pachete' : category;
-    
-    switch (displayCategory) {
-      case 'Tuns':
+  const getCategoryIcon = (category: ServiceCategory) => {
+    switch (category) {
+      case 'individual':
         return <Scissors className="w-4 h-4" />
-      case 'Barbă':
-        return <Zap className="w-4 h-4" />
-      case 'Tratamente':
-        return <Heart className="w-4 h-4" />
-      case 'Pachete':
+      case 'package':
         return <Package className="w-4 h-4" />
       default:
         return <Scissors className="w-4 h-4" />
     }
   }
 
-  const getStatusBadge = (status: Service['status'] | ServiceStatus) => {
-    const displayStatus = status === 'active' ? 'Activ' : status === 'inactive' ? 'Inactiv' : status;
+  const getStatusBadge = (status: ServiceStatus) => {
+    const displayStatus = status === 'active' ? 'Activ' : 'Inactiv';
     const styles = {
       Activ: 'bg-secondary/20 text-primary border-border',
       Inactiv: 'bg-secondary/20 text-secondary border-border'
@@ -356,8 +232,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     return `${minutes}min`
   }
 
-  const getServicesByCategory = (category: string) => {
-    return convertedServices.filter(s => s.category === category && s.status === 'Activ').length
+  const getServicesByCategory = (category: ServiceCategory) => {
+    return services.filter(s => s.category === category && s.status === 'active').length
   }
 
   return (
@@ -436,10 +312,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   className="px-3 py-2 bg-card border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary"
                 >
                   <option value="all">Toate</option>
-                  <option value="Tuns">Tuns</option>
-                  <option value="Barbă">Barbă</option>
-                  <option value="Tratamente">Tratamente</option>
-                  <option value="Pachete">Pachete</option>
+                  <option value="individual">Individual</option>
+                  <option value="package">Pachet</option>
                 </select>
               </div>
               <div className="flex flex-col">
@@ -450,8 +324,8 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   className="px-3 py-2 bg-card border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary"
                 >
                   <option value="all">Toate</option>
-                  <option value="Activ">Activ</option>
-                  <option value="Inactiv">Inactiv</option>
+                  <option value="active">Activ</option>
+                  <option value="inactive">Inactiv</option>
                 </select>
               </div>
               <div className="flex flex-col">
@@ -522,7 +396,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-primary">{service.name}</span>
-                          {'isPackage' in service && service.isPackage && (
+                          {service.category === 'package' && (
                             <span className="inline-flex items-center px-1 py-0.5 rounded text-xs bg-secondary/20 text-secondary border border-border">
                               <Package className="w-3 h-3 mr-1" />
                               Pachet
@@ -542,7 +416,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   <div className="col-span-2">
                     <div className="flex items-center gap-2">
                       {getCategoryIcon(service.category)}
-                      <span className="text-primary">{service.category}</span>
+                      <span className="text-primary">{service.category === 'individual' ? 'Individual' : 'Pachet'}</span>
                     </div>
                   </div>
 
@@ -563,9 +437,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   <div className="col-span-2">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-primary">
-                        {typeof service.price === 'string' 
-                          ? service.price.replace(' RON', '').replace('RON', '') + ' RON'
-                          : `${service.price} RON`}
+                        {service.price} {service.currency}
                       </span>
                     </div>
                   </div>
@@ -670,9 +542,9 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                 ? parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.'))
                 : serviceData.price,
               currency: 'RON',
-              duration: `${serviceData.serviceDuration}min`,
-              category: (serviceData.category?.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
-              status: (serviceData.status === 'Inactiv' ? 'inactive' : 'active') as ServiceStatus,
+              duration: `${serviceData.serviceDuration || 30}min`,
+              category: serviceData.category as ServiceCategory,
+              status: serviceData.status as ServiceStatus,
               description: serviceData.description?.trim()
             }
             await updateService(serviceToEdit.id, servicePayload)
@@ -683,12 +555,9 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
             name: serviceToEdit.name,
             category: serviceToEdit.category,
             description: serviceToEdit.description,
-            serviceDuration: serviceToEdit.serviceDuration,
-            bufferTime: serviceToEdit.bufferTime,
-            price: serviceToEdit.price,
-            status: serviceToEdit.status,
-            isPackage: serviceToEdit.isPackage || false,
-            packageItems: serviceToEdit.packageItems || []
+            serviceDuration: parseInt(serviceToEdit.duration?.replace('min', '') || '30'),
+            price: serviceToEdit.price.toString(),
+            status: serviceToEdit.status
           }}
         />
       )}

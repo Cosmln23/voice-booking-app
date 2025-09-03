@@ -21,19 +21,7 @@ import {
 } from 'lucide-react'
 
 
-interface Service {
-  id: string
-  name: string
-  category: 'Tuns' | 'Barbă' | 'Tratamente' | 'Pachete'
-  description?: string
-  serviceDuration: number
-  bufferTime: number
-  totalDuration: number
-  price: string
-  status: 'Activ' | 'Inactiv'
-  isPackage?: boolean
-  packageItems?: string[]
-}
+import type { Service } from '../../types'
 
 interface ServiceProfileProps {
   service: Service
@@ -45,13 +33,9 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
 
   const getCategoryIcon = (category: Service['category']) => {
     switch (category) {
-      case 'Tuns':
+      case 'individual':
         return <Scissors className="w-5 h-5" />
-      case 'Barbă':
-        return <Zap className="w-5 h-5" />
-      case 'Tratamente':
-        return <Heart className="w-5 h-5" />
-      case 'Pachete':
+      case 'package':
         return <Package className="w-5 h-5" />
       default:
         return <Scissors className="w-5 h-5" />
@@ -88,7 +72,7 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-2xl font-bold text-primary">{service.name}</h2>
-                  {service.isPackage && (
+                  {service.category === 'package' && (
                     <span className="inline-flex items-center px-2 py-1 rounded-2xl text-sm bg-secondary/20 text-secondary border border-border">
                       <Package className="w-4 h-4 mr-1" />
                       Pachet
@@ -98,23 +82,23 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                 <div className="flex items-center gap-4 text-sm text-secondary">
                   <span className="flex items-center gap-1">
                     {getCategoryIcon(service.category)}
-                    {service.category}
+                    {service.category === 'individual' ? 'Individual' : 'Pachet'}
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {formatDuration(service.totalDuration)}
+                    {service.duration}
                   </span>
                   <span className="flex items-center gap-1">
                     <DollarSign className="w-4 h-4" />
-                    {service.price}
+                    {service.price} {service.currency}
                   </span>
                   <span className={clsx(
                     "inline-flex items-center px-2 py-1 rounded-2xl text-xs border",
-                    service.status === 'Activ' 
+                    service.status === 'active' 
                       ? 'bg-secondary/20 text-primary border-border'
                       : 'bg-secondary/20 text-secondary border-border'
                   )}>
-                    {service.status}
+                    {service.status === 'active' ? 'Activ' : 'Inactiv'}
                   </span>
                 </div>
               </div>
@@ -180,36 +164,33 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="bg-background rounded-2xl p-4 border border-border text-center">
                   <Clock className="w-8 h-8 text-secondary mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-primary">{formatDuration(service.totalDuration)}</div>
+                  <div className="text-2xl font-bold text-primary">{service.duration}</div>
                   <div className="text-sm text-secondary">Durată Totală</div>
                 </div>
                 
                 <div className="bg-background rounded-2xl p-4 border border-border text-center">
-                  <div className="text-2xl font-bold text-primary">{service.price.replace(' RON', '').replace('RON', '')} RON</div>
+                  <div className="text-2xl font-bold text-primary">{service.price} {service.currency}</div>
                   <div className="text-sm text-secondary">Preț Serviciu</div>
                 </div>
 
                 <div className="bg-background rounded-2xl p-4 border border-border text-center">
                   {getCategoryIcon(service.category)}
-                  <div className="text-2xl font-bold text-primary">{service.category}</div>
+                  <div className="text-2xl font-bold text-primary">{service.category === 'individual' ? 'Individual' : 'Pachet'}</div>
                   <div className="text-sm text-secondary">Categorie</div>
                 </div>
               </div>
 
               {/* Package Details */}
-              {service.isPackage && service.packageItems && (
+              {service.category === 'package' && (
                 <div className="bg-background rounded-2xl p-4 border border-border">
                   <h3 className="font-semibold text-primary mb-3 flex items-center gap-2">
                     <Package className="w-4 h-4" />
-                    Componente Pachet
+                    Pachet de Servicii
                   </h3>
                   <div className="space-y-2">
-                    {service.packageItems.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-card rounded-2xl">
-                        <div className="w-2 h-2 bg-secondary rounded-full"></div>
-                        <span className="text-primary">{item}</span>
-                      </div>
-                    ))}
+                    <div className="p-3 bg-card rounded-2xl text-center text-secondary">
+                      Conținut pachet nu este disponibil
+                    </div>
                   </div>
                   <div className="mt-4 p-3 bg-secondary/10 rounded-2xl">
                     <p className="text-sm text-secondary">
@@ -231,17 +212,17 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                 </h3>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-card rounded-2xl">
-                    <div className="text-xl font-bold text-primary">{formatDuration(service.serviceDuration)}</div>
+                    <div className="text-xl font-bold text-primary">{service.duration}</div>
                     <div className="text-sm text-secondary">Timp Efectiv Serviciu</div>
                     <div className="text-xs text-secondary mt-1">Timpul de lucru real</div>
                   </div>
                   <div className="text-center p-4 bg-card rounded-2xl">
-                    <div className="text-xl font-bold text-primary">{formatDuration(service.bufferTime)}</div>
+                    <div className="text-xl font-bold text-primary">-</div>
                     <div className="text-sm text-secondary">Timp Tampon</div>
                     <div className="text-xs text-secondary mt-1">Pentru curățenie/pregătire</div>
                   </div>
                   <div className="text-center p-4 bg-secondary/10 rounded-2xl border border-secondary/20">
-                    <div className="text-xl font-bold text-primary">{formatDuration(service.totalDuration)}</div>
+                    <div className="text-xl font-bold text-primary">{service.duration}</div>
                     <div className="text-sm text-primary font-medium">Durată Totală</div>
                     <div className="text-xs text-secondary mt-1">Timpul rezervat în agendă</div>
                   </div>
@@ -265,12 +246,12 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-card rounded-2xl">
                     <span className="text-primary">Preț Serviciu:</span>
-                    <span className="font-semibold text-primary">{service.price.replace(' RON', '').replace('RON', '')} RON</span>
+                    <span className="font-semibold text-primary">{service.price} {service.currency}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-card rounded-2xl">
                     <span className="text-secondary">Preț per minut:</span>
                     <span className="text-secondary">
-                      {Math.round(parseInt(service.price.replace(/[^\d]/g, '')) / service.serviceDuration)} RON/min
+                      {Math.round(service.price / parseInt(service.duration?.replace('min', '') || '30'))} RON/min
                     </span>
                   </div>
                 </div>
@@ -290,13 +271,11 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                     )}>
                       {getCategoryIcon(service.category)}
                     </div>
-                    <span className="font-medium text-primary">{service.category}</span>
+                    <span className="font-medium text-primary">{service.category === 'individual' ? 'Individual' : 'Pachet'}</span>
                   </div>
                   <p className="text-sm text-secondary">
-                    {service.category === 'Tuns' && 'Servicii de tunsoare și aranjare păr pentru bărbați'}
-                    {service.category === 'Barbă' && 'Servicii specializate pentru îngrijirea și stilizarea bărbii'}
-                    {service.category === 'Tratamente' && 'Tratamente terapeutice și de îngrijire pentru păr și scalp'}
-                    {service.category === 'Pachete' && 'Combinații de servicii cu prețuri avantajoase'}
+                    {service.category === 'individual' && 'Servicii individuale personalizate'}
+                    {service.category === 'package' && 'Combinații de servicii cu prețuri avantajoase'}
                   </p>
                 </div>
               </div>
@@ -310,16 +289,16 @@ export default function ServiceProfile({ service, onClose }: ServiceProfileProps
                 <h3 className="font-semibold text-primary mb-4">Status Serviciu</h3>
                 <div className="flex items-center justify-between p-3 bg-card rounded-2xl">
                   <div>
-                    <div className="font-medium text-primary">Serviciu {service.status}</div>
+                    <div className="font-medium text-primary">Serviciu {service.status === 'active' ? 'Activ' : 'Inactiv'}</div>
                     <div className="text-sm text-secondary">
-                      {service.status === 'Activ' 
+                      {service.status === 'active' 
                         ? 'Serviciul este disponibil pentru programări'
                         : 'Serviciul nu este disponibil pentru programări noi'
                       }
                     </div>
                   </div>
                   <button className="flex items-center gap-2 text-secondary hover:text-primary transition-colors">
-                    {service.status === 'Activ' ? (
+                    {service.status === 'active' ? (
                       <ToggleRight className="w-8 h-8" />
                     ) : (
                       <ToggleLeft className="w-8 h-8" />
