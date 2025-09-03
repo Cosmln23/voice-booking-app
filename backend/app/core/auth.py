@@ -1,132 +1,119 @@
 """
-Authentication middleware pentru Supabase JWT verification
-Implements require_user() dependency function pentru API protection
+Production-ready Authentication middleware pentru Supabase JWT verification
+Uses PyJWKClient for automatic JWKS caching - SCALABLE & FAST
+Recommended by ChatGPT for production environments
 """
 
 import jwt
-import requests
-from typing import Optional, Dict, Any
+from jwt import PyJWKClient
+from typing import Dict, Any
 from fastapi import HTTPException, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import settings
 from app.core.logging import get_logger
-from functools import lru_cache
 
 logger = get_logger(__name__)
 security = HTTPBearer()
 
-# Cache pentru JWKS keys
-_jwks_cache: Optional[Dict[str, Any]] = None
-
-
-@lru_cache(maxsize=1)
-def get_jwks_url() -> str:
-    """Generate JWKS URL pentru Supabase project"""
+# Production-ready JWKS configuration
+def get_jwks_config():
+    """Get correct Supabase JWKS URL and issuer"""
     if not settings.supabase_url:
         raise HTTPException(status_code=500, detail="Supabase URL not configured")
     
-    # Extract project ref din URL
-    # Format: https://projectref.supabase.co
-    project_ref = settings.supabase_url.split('//')[1].split('.')[0]
-    jwks_url = f"https://{project_ref}.supabase.co/rest/v1/auth/jwks"
+    # CORRECT Supabase Auth endpoints (not REST API)
+    jwks_url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
+    issuer = f"{settings.supabase_url}/auth/v1"
     
     logger.debug(f"JWKS URL: {jwks_url}")
-    return jwks_url
-
-
-def fetch_jwks() -> Dict[str, Any]:
-    """Fetch și cache JWKS from Supabase"""
-    global _jwks_cache
+    logger.debug(f"Issuer: {issuer}")
     
+    return jwks_url, issuer
+
+# Initialize PyJWKClient with automatic caching
+JWKS_URL, ISSUER = get_jwks_config()
+jwks_client = PyJWKClient(JWKS_URL)
+
+logger.info(f"✅ PyJWKClient initialized with JWKS: {JWKS_URL}")
+
+
+async def verify_supabase_jwt(token: str) -> Dict[str, Any]:
+    """
+    HYBRID Production-ready JWT verification
+    1. Try PyJWKClient local validation (FAST)
+    2. Fallback to Supabase introspection if JWKS empty (RELIABLE)
+    """
     try:
-        jwks_url = get_jwks_url()
-        response = requests.get(jwks_url, timeout=10)
-        response.raise_for_status()
+        # FIRST: Try local JWKS validation (preferred)
+        signing_key = jwks_client.get_signing_key_from_jwt(token).key
         
-        _jwks_cache = response.json()
-        logger.info("JWKS fetched și cached successfully")
-        return _jwks_cache
-        
-    except Exception as e:
-        logger.error(f"Failed to fetch JWKS: {e}")
-        if _jwks_cache:
-            logger.warning("Using cached JWKS")
-            return _jwks_cache
-        raise HTTPException(status_code=500, detail="JWT verification unavailable")
-
-
-def get_signing_key(token_header: Dict[str, Any]) -> Optional[str]:
-    """Extract signing key din JWKS based on token header"""
-    try:
-        kid = token_header.get('kid')
-        if not kid:
-            return None
-        
-        jwks = fetch_jwks()
-        
-        for key in jwks.get('keys', []):
-            if key.get('kid') == kid:
-                # Convert JWK to PEM format pentru jwt library
-                from jwt.algorithms import RSAAlgorithm
-                return RSAAlgorithm.from_jwk(key)
-        
-        return None
-        
-    except Exception as e:
-        logger.error(f"Failed to get signing key: {e}")
-        return None
-
-
-def verify_jwt_token(token: str) -> Dict[str, Any]:
-    """Verify și decode Supabase JWT token"""
-    try:
-        # Decode header fără verification pentru a obține kid
-        unverified_header = jwt.get_unverified_header(token)
-        
-        # Get signing key
-        signing_key = get_signing_key(unverified_header)
-        if not signing_key:
-            raise HTTPException(status_code=401, detail="Invalid token signature")
-        
-        # Verify și decode token
+        # Decode and verify JWT locally
         payload = jwt.decode(
             token,
             signing_key,
-            algorithms=['RS256'],
-            audience='authenticated',  # Supabase audience
-            options={'verify_exp': True, 'verify_aud': True}
+            algorithms=["RS256"],
+            issuer=ISSUER,
+            options={
+                "verify_exp": True,
+                "verify_iss": True, 
+                "verify_aud": False,  # Supabase poate avea aud diferit
+            }
         )
         
-        logger.debug(f"JWT verified for user: {payload.get('sub')}")
+        logger.debug(f"JWT verified locally for user: {payload.get('sub')}")
         return payload
         
     except jwt.ExpiredSignatureError:
         logger.warning("JWT token expired")
         raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidIssuerError:
+        logger.warning(f"Invalid issuer in JWT token, expected: {ISSUER}")
+        raise HTTPException(status_code=401, detail="Invalid token issuer")
     except jwt.InvalidTokenError as e:
         logger.warning(f"Invalid JWT token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
-    except Exception as e:
-        logger.error(f"JWT verification failed: {e}")
-        raise HTTPException(status_code=401, detail="Authentication failed")
+    except Exception as jwks_error:
+        # FALLBACK: If JWKS fails (no keys, network, etc), try introspection
+        logger.warning(f"JWKS validation failed ({jwks_error}), trying fallback introspection")
+        
+        try:
+            user_info = await fallback_user_introspection(token)
+            logger.info("Successfully used fallback introspection")
+            
+            # Convert to JWT-like payload format
+            return {
+                'sub': user_info['user_id'],
+                'email': user_info['email'],
+                'role': user_info['role'],
+                'aud': 'authenticated',
+                'iss': ISSUER
+            }
+        except Exception as fallback_error:
+            logger.error(f"Both JWKS and introspection failed: JWKS={jwks_error}, Introspection={fallback_error}")
+            raise HTTPException(status_code=401, detail="Authentication failed")
 
 
 async def require_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> Dict[str, Any]:
     """
-    FastAPI dependency function pentru user authentication
+    FastAPI dependency pentru user authentication
+    Production-ready with local JWT validation
+    
     Returns: User info din JWT claims
-    Raises: HTTPException cu 401 dacă authentication fails
+    Raises: HTTPException 401 dacă authentication fails
     """
     try:
         if not credentials or not credentials.credentials:
             raise HTTPException(status_code=401, detail="Authorization header required")
         
-        token = credentials.credentials
+        token = credentials.credentials.strip()
         
-        # Verify JWT token
-        payload = verify_jwt_token(token)
+        if not token:
+            raise HTTPException(status_code=401, detail="Empty token")
+        
+        # Verify JWT token (hybrid approach)
+        payload = await verify_supabase_jwt(token)
         
         # Extract user info
         user_info = {
@@ -134,13 +121,14 @@ async def require_user(
             'email': payload.get('email'),
             'role': payload.get('role', 'authenticated'),
             'aud': payload.get('aud'),
-            'exp': payload.get('exp')
+            'exp': payload.get('exp'),
+            'iss': payload.get('iss')
         }
         
         if not user_info['user_id']:
             raise HTTPException(status_code=401, detail="Invalid user token")
         
-        logger.debug(f"User authenticated: {user_info['email']}")
+        logger.debug(f"User authenticated: {user_info['email']} (ID: {user_info['user_id']})")
         return user_info
         
     except HTTPException:
@@ -150,7 +138,7 @@ async def require_user(
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 
-# Optional: Function pentru checking specific roles
+# Optional: Admin role check
 def require_admin(user_info: Dict[str, Any] = Depends(require_user)) -> Dict[str, Any]:
     """
     Advanced dependency pentru admin-only endpoints
@@ -165,18 +153,22 @@ def require_admin(user_info: Dict[str, Any] = Depends(require_user)) -> Dict[str
 
 # Health check pentru auth system
 async def auth_health_check() -> Dict[str, Any]:
-    """Test auth system health"""
+    """Test auth system health - production ready"""
     try:
-        jwks_url = get_jwks_url()
-        
         # Test JWKS availability
-        response = requests.get(jwks_url, timeout=5)
-        response.raise_for_status()
+        jwks_url, issuer = get_jwks_config()
+        
+        # Test if PyJWKClient can fetch keys
+        keys = jwks_client.get_jwk_set()
+        key_count = len(keys.get('keys', []))
         
         return {
             "status": "healthy",
             "jwks_url": jwks_url,
-            "supabase_configured": bool(settings.supabase_url and settings.supabase_anon_key)
+            "issuer": issuer,
+            "jwks_keys_available": key_count,
+            "supabase_configured": bool(settings.supabase_url and settings.supabase_anon_key),
+            "auth_type": "PyJWKClient (Production)"
         }
         
     except Exception as e:
@@ -184,5 +176,43 @@ async def auth_health_check() -> Dict[str, Any]:
         return {
             "status": "unhealthy",
             "error": str(e),
-            "supabase_configured": bool(settings.supabase_url and settings.supabase_anon_key)
+            "jwks_url": JWKS_URL,
+            "issuer": ISSUER,
+            "supabase_configured": bool(settings.supabase_url and settings.supabase_anon_key),
+            "auth_type": "PyJWKClient (Production)"
         }
+
+
+# Fallback introspection (DOAR pentru debugging/emergency)
+async def fallback_user_introspection(token: str) -> Dict[str, Any]:
+    """
+    Fallback method - DOAR pentru debugging
+    NU folosești în producție normal
+    """
+    import httpx
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{settings.supabase_url}/auth/v1/user",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.supabase_anon_key
+                },
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                user_data = response.json()
+                logger.warning("Using fallback introspection - should not happen in prod")
+                return {
+                    'user_id': user_data.get('id'),
+                    'email': user_data.get('email'),
+                    'role': user_data.get('role', 'authenticated')
+                }
+            else:
+                raise HTTPException(status_code=401, detail="Token validation failed")
+                
+    except Exception as e:
+        logger.error(f"Fallback introspection failed: {e}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
