@@ -160,7 +160,7 @@ async def get_services(
 
 
 @router.post("/services", response_model=ServiceResponse)
-async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
+async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud_authenticated), user: dict = Depends(require_user)):
     """Create a new service"""
     try:
         # Create service in database using CRUD with user isolation
@@ -182,7 +182,7 @@ async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD 
 
 
 @router.put("/services/{service_id}", response_model=ServiceResponse)
-async def update_service(service_id: str, service_data: ServiceUpdate, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
+async def update_service(service_id: str, service_data: ServiceUpdate, service_crud: ServiceCRUD = Depends(get_service_crud_authenticated), user: dict = Depends(require_user)):
     """Update an existing service"""
     try:
         # Update service in database using CRUD
@@ -209,7 +209,7 @@ async def update_service(service_id: str, service_data: ServiceUpdate, service_c
 
 
 @router.delete("/services/{service_id}", response_model=ServiceResponse)
-async def delete_service(service_id: str, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
+async def delete_service(service_id: str, service_crud: ServiceCRUD = Depends(get_service_crud_authenticated), user: dict = Depends(require_user)):
     """Delete a service"""
     try:
         # Delete service from database using CRUD
