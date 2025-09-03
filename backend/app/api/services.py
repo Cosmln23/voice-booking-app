@@ -162,8 +162,9 @@ async def get_services(
 async def create_service(service_data: ServiceCreate, service_crud: ServiceCRUD = Depends(get_service_crud), user: dict = Depends(require_user)):
     """Create a new service"""
     try:
-        # Create service in database using CRUD
-        service_obj = await service_crud.create_service(service_data)
+        # Create service in database using CRUD with user isolation
+        user_id = user.get("sub")  # Get user ID from JWT token
+        service_obj = await service_crud.create_service(service_data, user_id)
         
         logger.info(f"Created service {service_obj.id}: {service_obj.name}",
                    extra={"service_id": str(service_obj.id), "service_name": service_obj.name, "price": service_obj.price})

@@ -244,9 +244,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
 
   // Fetch appointments on component mount and when filters change
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
     fetchAppointments({
-      date: today,
+      // Remove automatic date filtering to show all appointments
       status: statusFilter || undefined,
       limit: 50,
       offset: 0

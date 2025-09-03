@@ -131,7 +131,7 @@ class ServiceCRUD:
             logger.error(f"Failed to retrieve service stats: {e}", exc_info=True)
             raise
     
-    async def create_service(self, service_data: ServiceCreate) -> ServiceModel:
+    async def create_service(self, service_data: ServiceCreate, user_id: str = None) -> ServiceModel:
         """Create a new service"""
         try:
             # Convert Pydantic model to database format
@@ -148,6 +148,10 @@ class ServiceCRUD:
                 "created_at": datetime.now().isoformat(),
                 "updated_at": datetime.now().isoformat()
             }
+            
+            # Add created_by for RLS policy compliance
+            if user_id:
+                db_data["created_by"] = user_id
             
             # Insert service
             response = self.client.table(self.table).insert(db_data).execute()
