@@ -26,22 +26,9 @@ import {
 import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
-import type { Service as ApiService, ServiceStatus, ServiceCategory } from '../../types'
+import type { Service, ServiceStatus, ServiceCategory } from '../../types'
 
-interface Service {
-  id: string
-  name: string
-  category: 'Tuns' | 'Barbă' | 'Tratamente' | 'Pachete'
-  description?: string
-  serviceDuration: number // minutes
-  bufferTime: number // minutes
-  totalDuration: number // serviceDuration + bufferTime
-  price: string
-  status: 'Activ' | 'Inactiv'
-  isPackage?: boolean
-  packageItems?: string[] // for bundles
-}
-
+// Mock data removed - using only API data
 const convertedServices: Service[] = [
   {
     id: '1',
@@ -159,7 +146,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
 
   // Use real API data
   const {
-    services: apiServices,
+    services,
     total,
     isLoading,
     error,
@@ -255,9 +242,9 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
   const categories = ['Tuns', 'Barbă', 'Tratamente', 'Pachete']
 
   // Use only API services - no mock data fallback
-  const loading = isLoading && apiServices.length === 0
-  const hasData = apiServices.length > 0
-  const servicesToUse = apiServices
+  const loading = isLoading && services.length === 0
+  const hasData = services.length > 0
+  const servicesToUse = services
   
   const filteredServices = servicesToUse
     .filter(service => {
@@ -268,33 +255,33 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
       return matchesSearch && matchesCategory && matchesStatus
     })
     .sort((a, b) => {
-      let aValue, bValue
+      let aValue: string | number, bValue: string | number
       switch (sortBy) {
         case 'name':
           aValue = a.name
           bValue = b.name
-          break
+          return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
         case 'category':
           aValue = a.category
           bValue = b.category
-          break
+          return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
         case 'duration':
-          aValue = 'totalDuration' in a ? a.totalDuration : parseInt(a.duration?.replace('min', '') || '0')
-          bValue = 'totalDuration' in b ? b.totalDuration : parseInt(b.duration?.replace('min', '') || '0')
+          aValue = parseInt(a.duration?.replace('min', '') || '0')
+          bValue = parseInt(b.duration?.replace('min', '') || '0')
           break
         case 'price':
           const aPriceStr = typeof a.price === 'string' ? a.price : String(a.price)
           const bPriceStr = typeof b.price === 'string' ? b.price : String(b.price)
-          aValue = parseInt(aPriceStr.replace(/[^\d]/g, ''))
-          bValue = parseInt(bPriceStr.replace(/[^\d]/g, ''))
+          aValue = parseFloat(aPriceStr.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+          bValue = parseFloat(bPriceStr.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
           break
         default:
           return 0
       }
       if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+        return (aValue as number) < (bValue as number) ? -1 : (aValue as number) > (bValue as number) ? 1 : 0
       } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+        return (aValue as number) > (bValue as number) ? -1 : (aValue as number) < (bValue as number) ? 1 : 0
       }
     })
 
@@ -547,11 +534,6 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                             {service.description}
                           </div>
                         )}
-                        {'isPackage' in service && service.isPackage && 'packageItems' in service && service.packageItems && (
-                          <div className="text-xs text-secondary mt-1">
-                            Include: {service.packageItems.join(', ')}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -569,13 +551,11 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-secondary" />
                       <span className="font-semibold text-primary">
-                        {'totalDuration' in service ? formatDuration(service.totalDuration) : service.duration}
+                        {service.duration}
                       </span>
                     </div>
                     <div className="text-xs text-secondary">
-                      {'serviceDuration' in service && 'bufferTime' in service 
-                        ? `Serviciu: ${formatDuration(service.serviceDuration)} + Tampon: ${formatDuration(service.bufferTime)}`
-                        : `Durata: ${service.duration}`}
+                      Durata: {service.duration}
                     </div>
                   </div>
 
@@ -585,7 +565,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                       <span className="font-semibold text-primary">
                         {typeof service.price === 'string' 
                           ? service.price.replace(' RON', '').replace('RON', '') + ' RON'
-                          : service.price + ' RON'}
+                          : `${service.price} RON`}
                       </span>
                     </div>
                   </div>
@@ -599,21 +579,21 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                   <div className="col-span-1 text-center">
                     <div className="relative flex items-center justify-center gap-1">
                       <button 
-                        onClick={() => setSelectedService(service as Service)}
+                        onClick={() => setSelectedService(service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Vezi detalii"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => handleEditService(service as Service)}
+                        onClick={() => handleEditService(service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Editează"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => handleDuplicateService(service as Service)}
+                        onClick={() => handleDuplicateService(service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Dublează"
                       >
@@ -635,7 +615,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation()
-                              handleDeleteService(service as Service)
+                              handleDeleteService(service)
                               setShowDropdownForService(null)
                             }}
                             className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors text-left"
