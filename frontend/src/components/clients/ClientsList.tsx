@@ -136,7 +136,8 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
     isLoading, 
     error, 
     fetchClients,
-    fetchStats 
+    fetchStats,
+    createClient
   } = useClients()
 
   // Fetch clients on component mount
@@ -165,6 +166,38 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
   }
 
   const convertedClients = convertApiClients(apiClients)
+
+  // Phone normalization for Romanian format
+  const normalizePhone = (phone: string): string => {
+    const digits = phone.replace(/[^\d+]/g, ''); // Keep only digits and +
+    if (digits.startsWith('+')) return digits;   // Already has prefix
+    if (digits.startsWith('0')) return `+4${digits}`; // 0712... -> +40712...
+    return `+${digits}`; // Fallback
+  }
+
+  // Handle client creation with backend integration
+  const handleCreateClient = async (clientData: any) => {
+    try {
+      // Convert form data to backend format  
+      const clientPayload = {
+        name: clientData.name.trim(),
+        phone: normalizePhone(clientData.phone),
+        email: clientData.email.trim(),
+        status: clientData.status === 'Inactive' ? 'inactive' : 'active', // Map to backend enum
+        notes: clientData.notes?.trim() || undefined
+        // Note: preferences not supported in backend model
+      }
+      
+      await createClient(clientPayload)
+      setShowAddClient(false)
+      
+      // Refresh client list
+      fetchClients({ limit: 50, offset: 0 })
+    } catch (error) {
+      console.error('Error creating client:', error)
+      alert('Eroare la crearea clientului')
+    }
+  }
 
   // Handle loading and error states
   if (isLoading && apiClients.length === 0) {
@@ -488,11 +521,7 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
       {showAddClient && (
         <AddClientModal
           onClose={() => setShowAddClient(false)}
-          onSave={(clientData) => {
-            // Handle save logic here
-            console.log('New client:', clientData)
-            setShowAddClient(false)
-          }}
+          onSave={handleCreateClient}
         />
       )}
     </div>

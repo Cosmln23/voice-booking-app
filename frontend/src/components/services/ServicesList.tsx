@@ -152,9 +152,27 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'duration' | 'price'>('category')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
+  // Use real API data
+  const {
+    services: apiServices,
+    total,
+    isLoading,
+    error,
+    fetchServices,
+    createService
+  } = useServices()
+
+  // Fetch services on component mount
+  useEffect(() => {
+    fetchServices({ limit: 50, offset: 0 })
+  }, [fetchServices])
+
   const categories = ['Tuns', 'Barbă', 'Tratamente', 'Pachete']
 
-  const filteredServices = convertedServices
+  // Use API services if available, fallback to dummy data
+  const servicesToUse = apiServices.length > 0 ? apiServices : convertedServices
+  
+  const filteredServices = servicesToUse
     .filter(service => {
       const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            service.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -190,6 +208,31 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
       }
     })
+
+  // Handle service creation with backend integration
+  const handleCreateService = async (serviceData: any) => {
+    try {
+      // Convert form data to backend format
+      const servicePayload = {
+        name: serviceData.name.trim(),
+        price: parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.')), // Extract number from price
+        currency: 'RON',
+        duration: `${serviceData.serviceDuration}min`, // Convert minutes to "Xmin" format
+        category: serviceData.category.toLowerCase(), // Map to backend enum
+        description: serviceData.description?.trim() || undefined,
+        status: serviceData.status === 'Inactiv' ? 'inactive' : 'active'
+      }
+      
+      await createService(servicePayload)
+      setShowAddService(false)
+      
+      // Refresh services list
+      fetchServices({ limit: 50, offset: 0 })
+    } catch (error) {
+      console.error('Error creating service:', error)
+      alert('Eroare la crearea serviciului')
+    }
+  }
 
   const getCategoryIcon = (category: Service['category']) => {
     switch (category) {
@@ -495,10 +538,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
       {showAddService && (
         <AddServiceModal
           onClose={() => setShowAddService(false)}
-          onSave={(serviceData) => {
-            console.log('New service:', serviceData)
-            setShowAddService(false)
-          }}
+          onSave={handleCreateService}
         />
       )}
     </div>
