@@ -149,6 +149,11 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
   const [showFilters, setShowFilters] = useState(false)
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showAddService, setShowAddService] = useState(false)
+  const [showEditService, setShowEditService] = useState(false)
+  const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null)
+  const [showDropdownForService, setShowDropdownForService] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'duration' | 'price'>('category')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 
@@ -159,13 +164,69 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     isLoading,
     error,
     fetchServices,
-    createService
+    createService,
+    updateService,
+    deleteService
   } = useServices()
 
   // Fetch services on component mount
   useEffect(() => {
     fetchServices({ limit: 50, offset: 0 })
   }, [fetchServices])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showDropdownForService) {
+        setShowDropdownForService(null)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDropdownForService])
+
+  // Action handlers
+  const handleEditService = (service: Service) => {
+    setServiceToEdit(service)
+    setShowEditService(true)
+  }
+
+  const handleDuplicateService = async (service: Service) => {
+    try {
+      const serviceData = {
+        name: `${service.name} (Copie)`,
+        price: typeof service.price === 'string' 
+          ? parseFloat(service.price.replace(/[^\d.,]/g, '').replace(',', '.'))
+          : service.price,
+        currency: 'RON',
+        duration: `${service.serviceDuration}min`,
+        category: (service.category.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
+        status: service.status === 'Activ' ? 'active' : 'inactive' as ServiceStatus,
+        description: service.description
+      }
+      await createService(serviceData)
+    } catch (error) {
+      console.error('Error duplicating service:', error)
+    }
+  }
+
+  const handleDeleteService = (service: Service) => {
+    setServiceToDelete(service)
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!serviceToDelete) return
+    
+    try {
+      await deleteService(serviceToDelete.id)
+      setShowDeleteConfirm(false)
+      setServiceToDelete(null)
+    } catch (error) {
+      console.error('Error deleting service:', error)
+    }
+  }
 
   const categories = ['Tuns', 'Barbă', 'Tratamente', 'Pachete']
 
@@ -507,22 +568,39 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
+                        onClick={() => handleEditService(service as Service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Editează"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button 
+                        onClick={() => handleDuplicateService(service as Service)}
                         className="p-1 text-secondary hover:text-primary rounded transition-colors"
                         title="Dublează"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button 
-                        className="p-1 text-secondary hover:text-primary rounded transition-colors"
+                        onClick={() => setShowDropdownForService(showDropdownForService === service.id ? null : service.id)}
+                        className="p-1 text-secondary hover:text-primary rounded transition-colors relative"
                         title="Mai multe opțiuni"
                       >
                         <MoreHorizontal className="w-4 h-4" />
+                        {showDropdownForService === service.id && (
+                          <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[120px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteService(service as Service)
+                                setShowDropdownForService(null)
+                              }}
+                              className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                            >
+                              Șterge
+                            </button>
+                          </div>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -554,6 +632,61 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
           onClose={() => setShowAddService(false)}
           onSave={handleCreateService}
         />
+      )}
+
+      {showEditService && serviceToEdit && (
+        <AddServiceModal
+          onClose={() => {
+            setShowEditService(false)
+            setServiceToEdit(null)
+          }}
+          onSave={async (serviceData) => {
+            if (!serviceToEdit) return
+            const servicePayload = {
+              name: serviceData.name?.trim(),
+              price: typeof serviceData.price === 'string' 
+                ? parseFloat(serviceData.price.replace(/[^\d.,]/g, '').replace(',', '.'))
+                : serviceData.price,
+              currency: 'RON',
+              duration: `${serviceData.serviceDuration}min`,
+              category: (serviceData.category?.toLowerCase() === 'pachete' ? 'package' : 'individual') as ServiceCategory,
+              status: (serviceData.status === 'Inactiv' ? 'inactive' : 'active') as ServiceStatus,
+              description: serviceData.description?.trim()
+            }
+            await updateService(serviceToEdit.id, servicePayload)
+            setShowEditService(false)
+            setServiceToEdit(null)
+          }}
+          initialData={serviceToEdit}
+        />
+      )}
+
+      {showDeleteConfirm && serviceToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card border border-border rounded-lg p-6 max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-primary mb-4">Confirmă ștergerea</h3>
+            <p className="text-secondary mb-6">
+              Ești sigur că vrei să ștergi serviciul "{serviceToDelete.name}"? Această acțiune nu poate fi anulată.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setServiceToDelete(null)
+                }}
+                className="px-4 py-2 text-secondary hover:text-primary border border-border rounded-lg transition-colors"
+              >
+                Anulează
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors"
+              >
+                Șterge
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
