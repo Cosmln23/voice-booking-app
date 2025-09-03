@@ -168,6 +168,16 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
   const [showClientDetails, setShowClientDetails] = useState(false)
   const [selectedClient, setSelectedClient] = useState<AppointmentWithDetails | null>(null)
   const [showAddAppointment, setShowAddAppointment] = useState(false)
+  
+  // Form state for adding appointment
+  const [newAppointment, setNewAppointment] = useState({
+    clientName: '',
+    clientPhone: '',
+    date: '',
+    time: '',
+    service: '',
+    notes: ''
+  })
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | ''>('')
 
@@ -177,8 +187,50 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
     total, 
     isLoading, 
     error, 
-    fetchAppointments 
+    fetchAppointments,
+    createAppointment
   } = useAppointments()
+  
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!newAppointment.clientName || !newAppointment.clientPhone || !newAppointment.date || !newAppointment.time || !newAppointment.service) {
+      alert('Toate câmpurile sunt obligatorii')
+      return
+    }
+    
+    try {
+      await createAppointment({
+        client_id: newAppointment.clientName, // Will need to map to actual client ID
+        service_id: newAppointment.service, // Will need to map to actual service ID
+        date: new Date(newAppointment.date),
+        time: new Date(`1970-01-01T${newAppointment.time}`),
+        duration: '60min',
+        status: 'scheduled' as AppointmentStatus,
+        type: 'regular' as AppointmentType,
+        priority: 'normal' as AppointmentPriority,
+        notes: newAppointment.notes
+      })
+      
+      // Reset form and close modal
+      setNewAppointment({
+        clientName: '',
+        clientPhone: '',
+        date: '',
+        time: '',
+        service: '',
+        notes: ''
+      })
+      setShowAddAppointment(false)
+      
+      // Refresh appointments list
+      fetchAppointments()
+    } catch (error) {
+      console.error('Error creating appointment:', error)
+      alert('Eroare la crearea programării')
+    }
+  }
 
   // Fetch appointments on component mount and when filters change
   useEffect(() => {
@@ -629,6 +681,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                 <input
                   type="text"
                   placeholder="Nume complet client"
+                  value={newAppointment.clientName}
+                  onChange={(e) => setNewAppointment({...newAppointment, clientName: e.target.value})}
                   className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary placeholder-secondary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors"
                 />
               </div>
@@ -638,6 +692,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                 <input
                   type="tel"
                   placeholder="+40 123 456 789"
+                  value={newAppointment.clientPhone}
+                  onChange={(e) => setNewAppointment({...newAppointment, clientPhone: e.target.value})}
                   className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary placeholder-secondary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors"
                 />
               </div>
@@ -647,6 +703,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                   <label className="block text-sm font-medium text-primary mb-2">Data</label>
                   <input
                     type="date"
+                    value={newAppointment.date}
+                    onChange={(e) => setNewAppointment({...newAppointment, date: e.target.value})}
                     className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors"
                   />
                 </div>
@@ -654,6 +712,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                   <label className="block text-sm font-medium text-primary mb-2">Ora</label>
                   <input
                     type="time"
+                    value={newAppointment.time}
+                    onChange={(e) => setNewAppointment({...newAppointment, time: e.target.value})}
                     className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors"
                   />
                 </div>
@@ -661,7 +721,11 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
               
               <div>
                 <label className="block text-sm font-medium text-primary mb-2">Serviciu</label>
-                <select className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors">
+                <select 
+                  value={newAppointment.service}
+                  onChange={(e) => setNewAppointment({...newAppointment, service: e.target.value})}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors"
+                >
                   <option value="">Selectează serviciul</option>
                   <option value="tuns">Tuns simplu</option>
                   <option value="tuns-barba">Tuns + Barbă</option>
@@ -676,6 +740,8 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                 <textarea
                   placeholder="Observații despre client, preferințe, alergii..."
                   rows={3}
+                  value={newAppointment.notes}
+                  onChange={(e) => setNewAppointment({...newAppointment, notes: e.target.value})}
                   className="w-full px-3 py-2 bg-card border border-border rounded-2xl text-sm text-primary placeholder-secondary focus:outline-none focus:ring-1 focus:ring-secondary focus:border-secondary transition-colors resize-none"
                 ></textarea>
               </div>
@@ -690,7 +756,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
                 Anulează
               </button>
               <button 
-                onClick={() => setShowAddAppointment(false)}
+                onClick={handleSubmit}
                 className="flex-1 px-4 py-2 bg-primary text-background rounded-2xl hover:bg-secondary transition-colors"
               >
                 Salvează Programare
