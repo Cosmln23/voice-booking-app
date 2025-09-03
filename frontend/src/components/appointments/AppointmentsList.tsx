@@ -191,6 +191,14 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
     createAppointment
   } = useAppointments()
   
+  // Normalize phone number for Romanian format
+  const normalizePhone = (phone: string): string => {
+    const digits = phone.replace(/[^\d+]/g, ''); // Keep only digits and +
+    if (digits.startsWith('+')) return digits;   // Already has prefix
+    if (digits.startsWith('0')) return `+4${digits}`; // 0712... -> +40712...
+    return `+${digits}`; // Fallback
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,17 +209,19 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
     }
     
     try {
-      await createAppointment({
-        client_id: newAppointment.clientName, // Will need to map to actual client ID
-        service_id: newAppointment.service, // Will need to map to actual service ID
-        date: new Date(newAppointment.date),
-        time: new Date(`1970-01-01T${newAppointment.time}`),
+      // Convert form data to backend format
+      const appointmentData = {
+        client_name: newAppointment.clientName.trim(),
+        phone: normalizePhone(newAppointment.clientPhone),
+        service: newAppointment.service.trim(),
+        date: newAppointment.date, // "YYYY-MM-DD" format
+        time: newAppointment.time, // "HH:MM" format
         duration: '60min',
-        status: 'scheduled' as AppointmentStatus,
-        type: 'regular' as AppointmentType,
-        priority: 'normal' as AppointmentPriority,
-        notes: newAppointment.notes
-      })
+        // Don't send status/type/priority - let backend use defaults
+        notes: newAppointment.notes?.trim() || undefined
+      }
+      
+      await createAppointment(appointmentData)
       
       // Reset form and close modal
       setNewAppointment({
