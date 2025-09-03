@@ -64,6 +64,8 @@ class AgentConfiguration(BaseModel):
 
 class BusinessSettings(BaseModel):
     """Business settings model"""
+    id: Optional[str] = None  # Database ID
+    created_by: Optional[str] = None  # User UUID who created these settings
     name: str = Field(..., min_length=1, max_length=100)
     address: str = Field(..., min_length=1, max_length=200)
     phone: str = Field(..., pattern=r'^\+?[1-9]\d{1,14}$')

@@ -36,6 +36,7 @@ class ClientUpdate(BaseModel):
 class Client(ClientBase):
     """Full client model with database fields"""
     id: str
+    created_by: Optional[str] = None  # User UUID who created this client
     created_at: datetime
     updated_at: datetime
     avatar: Optional[str] = None  # URL or initials

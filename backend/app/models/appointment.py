@@ -62,6 +62,7 @@ class AppointmentUpdate(BaseModel):
 class Appointment(AppointmentBase):
     """Full appointment model with database fields"""
     id: str
+    created_by: Optional[str] = None  # User UUID who created this appointment
     created_at: datetime
     updated_at: datetime
     price: Optional[str] = None  # Only for completed appointments

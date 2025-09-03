@@ -11,7 +11,9 @@ from app.models.client import (
 from app.core.logging import get_logger
 from app.core.auth import require_user
 from app.database.crud_clients import ClientCRUD
+from app.database.user_crud_clients import UserClientCRUD
 from app.database import get_database
+from app.api.dependencies import get_user_client_crud
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -91,16 +93,16 @@ MOCK_CLIENTS = [
 
 @router.get("/clients/stats")
 async def get_client_stats(
-    client_crud: ClientCRUD = Depends(get_client_crud),
+    user_client_crud: UserClientCRUD = Depends(get_user_client_crud),
     user: dict = Depends(require_user)
 ):
-    """Get client statistics"""
+    """Get client statistics for current user"""
     try:
-        # Get statistics from database using CRUD
-        stats = await client_crud.get_client_stats()
+        # Get statistics from database using user-isolated CRUD
+        stats = await user_client_crud.get_client_stats()
         
-        logger.info("Retrieved client statistics from database",
-                   extra={"total_clients": stats.total_clients, "active_clients": stats.active_clients})
+        logger.info("Retrieved client statistics for user",
+                   extra={"user_email": user.get("email"), "stats": stats})
         
         return {
             "success": True,
@@ -119,13 +121,13 @@ async def get_clients(
     status: Optional[ClientStatus] = Query(None, description="Filter by status"),
     limit: int = Query(50, ge=1, le=100, description="Number of results to return"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
-    client_crud: ClientCRUD = Depends(get_client_crud),
+    user_client_crud: UserClientCRUD = Depends(get_user_client_crud),
     user: dict = Depends(require_user)
 ):
-    """Get clients with optional search and filtering"""
+    """Get clients with optional search and filtering for current user"""
     try:
-        # Get clients from database using CRUD
-        client_objects, total = await client_crud.get_clients(
+        # Get clients from database using user-isolated CRUD
+        client_objects, total = await user_client_crud.get_clients(
             search=search,
             status=status,
             limit=limit,
@@ -156,13 +158,13 @@ def _get_write_client(request: Request):
 @router.post("/clients", response_model=ClientResponse)
 async def create_client(
     client_data: ClientCreate, 
-    client_crud: ClientCRUD = Depends(get_client_crud),
+    user_client_crud: UserClientCRUD = Depends(get_user_client_crud),
     user: dict = Depends(require_user)
 ):
-    """Create a new client"""
+    """Create a new client for current user"""
     try:
-        # Create client in database using CRUD
-        client_obj = await client_crud.create_client(client_data)
+        # Create client in database using user-isolated CRUD
+        client_obj = await user_client_crud.create_client(client_data)
         
         logger.info(f"Created client {client_obj.id}: {client_obj.name}",
                    extra={"client_id": str(client_obj.id), "client_name": client_obj.name})
@@ -182,13 +184,13 @@ async def create_client(
 async def update_client(
     client_id: str, 
     client_data: ClientUpdate, 
-    client_crud: ClientCRUD = Depends(get_client_crud),
+    user_client_crud: UserClientCRUD = Depends(get_user_client_crud),
     user: dict = Depends(require_user)
 ):
-    """Update an existing client"""
+    """Update an existing client for current user"""
     try:
-        # Update client in database using CRUD
-        client_obj = await client_crud.update_client(client_id, client_data)
+        # Update client in database using user-isolated CRUD
+        client_obj = await user_client_crud.update_client(client_id, client_data)
         
         if not client_obj:
             raise HTTPException(status_code=404, detail="Client not found")
@@ -213,13 +215,13 @@ async def update_client(
 @router.delete("/clients/{client_id}", response_model=ClientResponse)
 async def delete_client(
     client_id: str, 
-    client_crud: ClientCRUD = Depends(get_client_crud),
+    user_client_crud: UserClientCRUD = Depends(get_user_client_crud),
     user: dict = Depends(require_user)
 ):
-    """Delete a client"""
+    """Delete a client for current user"""
     try:
-        # Delete client from database using CRUD
-        deleted = await client_crud.delete_client(client_id)
+        # Delete client from database using user-isolated CRUD
+        deleted = await user_client_crud.delete_client(client_id)
         
         if not deleted:
             raise HTTPException(status_code=404, detail="Client not found")

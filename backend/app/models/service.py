@@ -46,6 +46,7 @@ class ServiceUpdate(BaseModel):
 class Service(ServiceBase):
     """Full service model with database fields"""
     id: str
+    created_by: Optional[str] = None  # User UUID who created this service
     created_at: datetime
     updated_at: datetime
     popularity_score: float = 0.0  # For analytics
