@@ -344,54 +344,54 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             <HorizontalScroller>
-              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <Phone className="w-5 h-5 text-secondary" />
+              <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                  <Phone className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Total Apeluri</span>
                 </div>
-                <div className="text-lg font-bold text-primary">{performanceMetrics.totalCalls}</div>
+                <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{performanceMetrics.totalCalls}</div>
                 <div className="text-xs text-secondary">Această lună</div>
               </div>
 
-              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <CheckCircle className="w-5 h-5 text-secondary" />
+              <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                  <CheckCircle className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Rata de Succes</span>
                 </div>
-                <div className="text-lg font-bold text-primary">{performanceMetrics.successRate}%</div>
+                <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{performanceMetrics.successRate}%</div>
                 <div className="text-xs text-secondary">{performanceMetrics.completedBookings} programări finalizate</div>
               </div>
 
-              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock className="w-5 h-5 text-secondary" />
+              <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                  <Clock className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Timp Economisit</span>
                 </div>
-                <div className="text-lg font-bold text-primary">{performanceMetrics.timeSaved}h</div>
+                <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{performanceMetrics.timeSaved}h</div>
                 <div className="text-xs text-secondary">Durată medie: {performanceMetrics.avgCallDuration}</div>
               </div>
             </HorizontalScroller>
 
             {/* Costs and Efficiency */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5" />
+            <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                <DollarSign className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Costuri și Eficiență
               </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="p-3 bg-card rounded-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-4 md:gap-3 sm:gap-3">
+                <div className="p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl">
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary">Costuri Tokens (Luna curentă):</span>
-                    <span className="font-semibold text-primary">{performanceMetrics.tokenCosts} RON</span>
+                    <span className="text-secondary lg:text-secondary md:text-sm sm:text-sm">Costuri Tokens (Luna curentă):</span>
+                    <span className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">{performanceMetrics.tokenCosts} RON</span>
                   </div>
                   <div className="text-xs text-secondary mt-1">
                     Cost mediu per apel: {(performanceMetrics.tokenCosts / performanceMetrics.totalCalls).toFixed(2)} RON
                   </div>
                 </div>
-                <div className="p-3 bg-card rounded-2xl">
+                <div className="p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl">
                   <div className="flex justify-between items-center">
-                    <span className="text-secondary">Economie estimată:</span>
-                    <span className="font-semibold text-primary">{Math.round(performanceMetrics.timeSaved * 25)} RON</span>
+                    <span className="text-secondary lg:text-secondary md:text-sm sm:text-sm">Economie estimată:</span>
+                    <span className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">{Math.round(performanceMetrics.timeSaved * 25)} RON</span>
                   </div>
                   <div className="text-xs text-secondary mt-1">
                     Bazat pe {performanceMetrics.timeSaved}h × 25 RON/oră salariu operator
@@ -403,23 +403,23 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
         )}
 
         {activeTab === 'config' && (
-          <div className="space-y-6">
+          <div className="space-y-6 lg:space-y-6 md:space-y-3 sm:space-y-3">
             {/* Voice Configuration */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                <Volume2 className="w-5 h-5" />
+            <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                <Volume2 className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Configurare Voce
               </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-6 md:gap-3 sm:gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-primary mb-2">
+                  <label className="block text-sm lg:text-sm md:text-sm sm:text-sm font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary mb-2">
                     Gen Voce
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3">
                     <button
                       onClick={() => setVoiceGender('female')}
                       className={clsx(
-                        'px-4 py-2 rounded-2xl border transition-colors',
+                        'px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 rounded-2xl border transition-colors text-sm',
                         voiceGender === 'female'
                           ? 'bg-secondary/20 text-primary border-border'
                           : 'bg-background text-secondary border-border hover:text-primary'
@@ -430,7 +430,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                     <button
                       onClick={() => setVoiceGender('male')}
                       className={clsx(
-                        'px-4 py-2 rounded-2xl border transition-colors',
+                        'px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 rounded-2xl border transition-colors text-sm',
                         voiceGender === 'male'
                           ? 'bg-secondary/20 text-primary border-border'
                           : 'bg-background text-secondary border-border hover:text-primary'
@@ -442,13 +442,13 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-primary mb-2">
+                  <label className="block text-sm lg:text-sm md:text-sm sm:text-sm font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary mb-2">
                     Ton Voce
                   </label>
                   <select
                     value={voiceTone}
                     onChange={(e) => setVoiceTone(e.target.value as any)}
-                    className="w-full px-4 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
+                    className="w-full px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background border border-border rounded-2xl text-primary lg:text-primary md:text-sm sm:text-sm focus:outline-none focus:border-secondary transition-colors"
                   >
                     <option value="professional">Profesional</option>
                     <option value="friendly">Prietenos</option>
@@ -459,22 +459,22 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             {/* Greeting Message */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
+            <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                <MessageSquare className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Mesaj de Întâmpinare
               </h3>
               <textarea
                 value={greetingMessage}
                 onChange={(e) => setGreetingMessage(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-2 bg-background border border-border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors resize-none"
+                className="w-full px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background border border-border rounded-2xl text-primary lg:text-primary md:text-sm sm:text-sm placeholder-secondary focus:outline-none focus:border-secondary transition-colors resize-none"
                 placeholder="Introduceti mesajul de întâmpinare..."
               />
               <div className="mt-2 flex justify-between items-center">
                 <span className="text-xs text-secondary">{greetingMessage.length}/500 caractere</span>
-                <button className="flex items-center gap-1 px-3 py-1 text-xs bg-background text-secondary border border-border rounded-2xl hover:text-primary transition-colors">
-                  <Play className="w-3 h-3" />
+                <button className="flex items-center gap-1 lg:gap-1 md:gap-3 sm:gap-3 px-3 py-1 lg:px-3 lg:py-1 md:px-3 md:py-2 sm:px-3 sm:py-2 text-xs bg-background text-secondary border border-border rounded-2xl hover:text-primary transition-colors">
+                  <Play className="w-3 h-3 lg:w-3 lg:h-3 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                   Testează Vocea
                 </button>
               </div>
@@ -536,18 +536,18 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
         )}
 
         {activeTab === 'dictionary' && (
-          <div className="space-y-6">
+          <div className="space-y-6 lg:space-y-6 md:space-y-3 sm:space-y-3">
             {/* Dictionary Header */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <h3 className="font-semibold text-primary mb-2 flex items-center gap-2">
-                <Brain className="w-5 h-5" />
+            <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-2 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                <Brain className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Dicționar și Sinonime AI
               </h3>
-              <p className="text-sm text-secondary mb-4">
+              <p className="text-sm lg:text-sm md:text-sm sm:text-sm text-secondary mb-4">
                 Mapează termenii folosiți de clienți pe serviciile oficiale pentru a îmbunătăți înțelegerea AI-ului.
               </p>
-              <button className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
-                <Edit className="w-4 h-4 mr-2" />
+              <button className="flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background text-secondary lg:text-secondary md:text-sm sm:text-sm border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
+                <Edit className="w-4 h-4 lg:w-4 lg:h-4 md:w-4 md:h-4 sm:w-4 sm:h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
                 Adaugă Mapare Nouă
               </button>
             </div>
