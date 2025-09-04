@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import '../styles/globals.css'
+import SessionProvider from '../components/providers/SessionProvider'
 
 export const metadata: Metadata = {
   title: 'Tablou de Bord — Voice Booking',
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ro">
-      <body>{children}</body>
+      <body>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
+      </body>
     </html>
   )
 }

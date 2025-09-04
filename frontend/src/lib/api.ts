@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { getAccessToken } from './auth';
 
 // Base configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -18,52 +19,25 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
 
+// API fetch wrapper with automatic token attachment
+export async function apiFetch(path: string, init: RequestInit = {}) {
+  const token = await getAccessToken();
+  return fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+}
+
 // API Response wrapper
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
   total?: number;
-}
-
-// Auth helper function to get headers with token and ensure session
-async function withAuthHeaders(headers: Record<string, string> = {}): Promise<Record<string, string>> {
-  try {
-    let { data: { session } } = await supabase.auth.getSession();
-    
-    // If no session, try to sign in with existing user or anonymous
-    if (!session) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'scinterim09@gmail.com',
-          password: 'temporary123'
-        });
-        if (!error && data.session) {
-          session = data.session;
-        } else {
-          // Fallback to anonymous
-          const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
-          if (!anonError && anonData.session) {
-            session = anonData.session;
-          }
-        }
-      } catch (authError) {
-        console.error('Auth sign-in error:', authError);
-      }
-    }
-    
-    if (session?.access_token) {
-      return {
-        ...headers,
-        'Authorization': `Bearer ${session.access_token}`,
-      };
-    }
-    
-    return headers;
-  } catch (error) {
-    console.error('Auth header error:', error);
-    return headers;
-  }
 }
 
 // HTTP Client class
@@ -85,16 +59,9 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      // Get headers with auth token
-      const authHeaders = await withAuthHeaders({
-        'Content-Type': 'application/json',
-        ...options.headers as Record<string, string>,
-      });
-
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await apiFetch(endpoint, {
         ...options,
         signal: controller.signal,
-        headers: authHeaders,
       });
 
       clearTimeout(timeoutId);

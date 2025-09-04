@@ -14,26 +14,20 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 export async function ensureSession() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) {
-    // Login anonymous provizoriu sau sign-in cu email existent
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'scinterim09@gmail.com',
-      password: 'temporary123' // sau orice parolă pentru acest user
-    })
-    if (error) {
-      // Fallback la anonymous
-      const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously()
-      if (anonError) throw anonError
-      return anonData.session
-    }
-    return data.session
+    await supabase.auth.signInAnonymously()
   }
-  return session
+}
+
+export async function getAccessToken() {
+  await ensureSession()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token ?? ''
 }
 
 export async function getAuthHeaders() {
-  const session = await ensureSession()
+  const token = await getAccessToken()
   return {
-    Authorization: `Bearer ${session?.access_token}`,
+    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json'
   }
 }
