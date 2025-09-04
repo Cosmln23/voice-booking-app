@@ -34,19 +34,21 @@ export default function AdminPage() {
         
         if (error) {
           console.error('Auth error:', error);
-          router.push('/login');
+          setAuthenticated(false);
+          setLoading(false);
           return;
         }
 
         if (!session) {
-          router.push('/login');
+          setAuthenticated(false);
+          setLoading(false);
           return;
         }
 
         setAuthenticated(true);
       } catch (error) {
         console.error('Session check error:', error);
-        router.push('/login');
+        setAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -57,7 +59,6 @@ export default function AdminPage() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        router.push('/login');
         setAuthenticated(false);
       } else if (event === 'SIGNED_IN' && session) {
         setAuthenticated(true);
@@ -179,13 +180,10 @@ export default function AdminPage() {
     );
   }
 
-  // Not authenticated
+  // Not authenticated - show empty page
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Redirecționare către login...</p>
-        </div>
+      <div className="min-h-screen bg-background">
       </div>
     );
   }
