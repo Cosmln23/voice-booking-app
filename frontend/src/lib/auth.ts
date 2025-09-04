@@ -10,24 +10,3 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: false 
   },
 })
-
-export async function ensureSession() {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) {
-    await supabase.auth.signInAnonymously()
-  }
-}
-
-export async function getAccessToken() {
-  await ensureSession()
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token ?? ''
-}
-
-export async function getAuthHeaders() {
-  const token = await getAccessToken()
-  return {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  }
-}

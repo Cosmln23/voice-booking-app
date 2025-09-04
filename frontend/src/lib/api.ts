@@ -4,7 +4,6 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { getAccessToken } from './auth';
 
 // Base configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -19,17 +18,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Request timeout in milliseconds
 const REQUEST_TIMEOUT = 10000;
 
-// API fetch wrapper with automatic token attachment
-export async function apiFetch(path: string, init: RequestInit = {}) {
-  const token = await getAccessToken();
-  return fetch(`${API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      ...(init.headers || {}),
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-  });
+// Clean auth headers - no forced authentication
+async function withAuthHeaders(headers: Record<string, string> = {}): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token
+    ? { ...headers, Authorization: `Bearer ${session.access_token}` }
+    : headers;
 }
 
 // API Response wrapper
@@ -59,9 +53,16 @@ class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      const response = await apiFetch(endpoint, {
+      // Get headers with auth token (only if session exists)
+      const authHeaders = await withAuthHeaders({
+        'Content-Type': 'application/json',
+        ...options.headers as Record<string, string>,
+      });
+
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
         ...options,
         signal: controller.signal,
+        headers: authHeaders,
       });
 
       clearTimeout(timeoutId);

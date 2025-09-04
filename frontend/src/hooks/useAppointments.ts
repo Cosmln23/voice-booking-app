@@ -3,8 +3,8 @@
  * Handles CRUD operations and state management
  */
 
-import { useState, useCallback } from 'react';
-import { api } from '../lib/api';
+import { useState, useCallback, useEffect } from 'react';
+import { api, supabase } from '../lib/api';
 import type { 
   Appointment, 
   AppointmentCreate, 
@@ -18,8 +18,33 @@ export const useAppointments = (): UseAppointmentsReturn => {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [hasSession, setHasSession] = useState(false);
+
+  // Check for session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchAppointments = useCallback(async (filters?: AppointmentFilters) => {
+    // Don't fetch if no session
+    if (!hasSession) {
+      setAppointments([]);
+      setTotal(0);
+      setError('No session available');
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
 
@@ -50,7 +75,7 @@ export const useAppointments = (): UseAppointmentsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [hasSession]);
 
   const createAppointment = useCallback(async (data: AppointmentCreate): Promise<Appointment> => {
     setIsLoading(true);
