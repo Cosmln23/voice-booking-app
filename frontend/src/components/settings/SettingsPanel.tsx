@@ -160,9 +160,9 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
   return (
     <div className="flex-1 flex flex-col bg-card h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 lg:p-6 md:p-3 sm:p-3 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
             {isMobile && (
               <button 
                 onClick={onMobileToggle}
@@ -171,22 +171,22 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Settings className="w-8 h-8 text-secondary" />
+            <Settings className="w-8 h-8 lg:w-8 lg:h-8 md:w-6 md:h-6 sm:w-6 sm:h-6 text-secondary" />
             <div>
-              <h1 className="text-3xl font-bold text-primary">Setări</h1>
-              <p className="text-base text-secondary">
+              <h1 className="text-3xl lg:text-3xl md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">Setări</h1>
+              <p className="text-base lg:text-base md:text-sm sm:text-sm text-secondary">
                 Configurarea afacerii și aplicației
               </p>
             </div>
           </div>
-          <button className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
-            <Save className="w-4 h-4 mr-2" />
-            Salvează Toate
+          <button className="hidden lg:flex md:flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background text-secondary lg:text-secondary md:text-sm sm:text-sm border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
+            <Save className="w-4 h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
+            <span className="lg:inline md:text-sm sm:text-sm">Salvează Toate</span>
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-8 overflow-x-auto">
+        <div className="flex gap-8 lg:gap-8 md:gap-3 sm:gap-3 overflow-x-auto">
           {[
             { key: 'business', label: 'Detalii Afacere', icon: Building2 },
             { key: 'schedule', label: 'Program Lucru', icon: Clock },
@@ -199,21 +199,21 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={clsx(
-                'flex items-center gap-2 py-3 border-b-2 transition-colors whitespace-nowrap',
+                'flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3 py-3 lg:py-3 md:py-2 sm:py-2 border-b-2 transition-colors whitespace-nowrap text-sm',
                 activeTab === tab.key
                   ? 'border-secondary text-primary'
                   : 'border-transparent text-secondary hover:text-primary'
               )}
             >
               <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <span className="lg:inline md:text-sm sm:text-sm">{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 lg:p-6 md:p-3 sm:p-3">
         {activeTab === 'business' && (
           <div className="space-y-6">
             {/* Business Information */}

@@ -240,9 +240,9 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
   return (
     <div className="flex-1 flex flex-col bg-card h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 lg:p-6 md:p-3 sm:p-3 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
             {isMobile && (
               <button 
                 onClick={onMobileToggle}
@@ -251,26 +251,26 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Scissors className="w-8 h-8 text-secondary" />
+            <Scissors className="w-8 h-8 lg:w-8 lg:h-8 md:w-6 md:h-6 sm:w-6 sm:h-6 text-secondary" />
             <div>
-              <h1 className="text-3xl font-bold text-primary">Servicii</h1>
-              <p className="text-base text-secondary">
+              <h1 className="text-3xl lg:text-3xl md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">Servicii</h1>
+              <p className="text-base lg:text-base md:text-sm sm:text-sm text-secondary">
                 Catalog servicii
               </p>
             </div>
           </div>
           <button 
             onClick={() => setShowAddService(true)}
-            className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors"
+            className="flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background text-secondary lg:text-secondary md:text-sm sm:text-sm border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Adaugă Serviciu
+            <Plus className="w-4 h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
+            <span className="lg:inline md:text-sm sm:text-sm">Adaugă Serviciu</span>
           </button>
         </div>
 
 
         {/* Search and Filters */}
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-4 md:gap-3 sm:gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-secondary" />
             <input
@@ -278,25 +278,25 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
               placeholder="Căutare servicii după nume sau descriere..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-2xl text-primary placeholder-secondary focus:outline-none focus:border-secondary transition-colors"
+              className="w-full pl-10 pr-4 py-2 lg:pl-10 lg:pr-4 lg:py-2 md:pl-10 md:pr-4 md:py-2 sm:pl-10 sm:pr-4 sm:py-2 bg-background border border-border rounded-2xl text-primary lg:text-primary md:text-sm sm:text-sm placeholder-secondary focus:outline-none focus:border-secondary transition-colors"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3">
             <button 
               onClick={() => setShowFilters(!showFilters)}
               className={clsx(
-                "flex items-center px-4 py-2 rounded-2xl transition-colors border",
+                "flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 rounded-2xl transition-colors border text-sm",
                 showFilters 
                   ? 'bg-secondary/20 text-primary border-border' 
                   : 'bg-background text-secondary border-border hover:text-primary hover:border-secondary'
               )}
             >
-              <Filter className="w-4 h-4 mr-2" />
-              Filtrare
+              <Filter className="w-4 h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
+              <span className="lg:inline md:hidden sm:hidden">Filtrare</span>
             </button>
-            <button className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
-              <Download className="w-4 h-4 mr-2" />
-              Export
+            <button className="hidden lg:flex md:flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background text-secondary lg:text-secondary md:text-sm sm:text-sm border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
+              <Download className="w-4 h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
+              <span className="lg:inline md:text-sm sm:text-sm">Export</span>
             </button>
           </div>
         </div>
@@ -493,7 +493,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                       
                       {/* Dropdown în afara butonului */}
                       {showDropdownForService === service.id && (
-                        <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[140px]">
+                        <div className="absolute right-0 top-8 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[140px]">
                           <button
                             type="button"
                             onClick={(e) => {

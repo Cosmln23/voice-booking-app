@@ -96,9 +96,9 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
   return (
     <div className="flex-1 flex flex-col bg-card h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 lg:p-6 md:p-3 sm:p-3 border-b border-border">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
             {isMobile && (
               <button 
                 onClick={onMobileToggle}
@@ -107,29 +107,29 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <TrendingUp className="w-8 h-8 text-secondary" />
+            <TrendingUp className="w-8 h-8 lg:w-8 lg:h-8 md:w-6 md:h-6 sm:w-6 sm:h-6 text-secondary" />
             <div>
-              <h1 className="text-3xl font-bold text-primary">Statistici</h1>
-              <p className="text-base text-secondary">
+              <h1 className="text-3xl lg:text-3xl md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">Statistici</h1>
+              <p className="text-base lg:text-base md:text-sm sm:text-sm text-secondary">
                 Analiza performanței pe termen lung
               </p>
             </div>
           </div>
-          <button className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
-            <Download className="w-4 h-4 mr-2" />
-            Export Raport
+          <button className="hidden lg:flex md:flex items-center px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background text-secondary lg:text-secondary md:text-sm sm:text-sm border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
+            <Download className="w-4 h-4 mr-2 lg:mr-2 md:mr-1 sm:mr-1" />
+            <span className="lg:inline md:text-sm sm:text-sm">Export Raport</span>
           </button>
         </div>
 
         {/* Time Interval Selector */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-4 md:gap-3 sm:gap-3">
+          <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3">
             {(['week', 'month', 'year'] as TimeInterval[]).map((interval) => (
               <button
                 key={interval}
                 onClick={() => setSelectedInterval(interval)}
                 className={clsx(
-                  'px-4 py-2 rounded-2xl border transition-colors',
+                  'px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 rounded-2xl border transition-colors text-sm',
                   selectedInterval === interval
                     ? 'bg-secondary/20 text-primary border-border'
                     : 'bg-background text-secondary border-border hover:text-primary hover:border-secondary'
@@ -141,7 +141,7 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
             <button
               onClick={() => setSelectedInterval('custom')}
               className={clsx(
-                'px-4 py-2 rounded-2xl border transition-colors',
+                'px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 rounded-2xl border transition-colors text-sm',
                 selectedInterval === 'custom'
                   ? 'bg-secondary/20 text-primary border-border'
                   : 'bg-background text-secondary border-border hover:text-primary hover:border-secondary'
@@ -152,19 +152,19 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
           </div>
 
           {selectedInterval === 'custom' && (
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3 items-center">
               <input
                 type="date"
                 value={customDateFrom}
                 onChange={(e) => setCustomDateFrom(e.target.value)}
-                className="px-3 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
+                className="px-3 py-2 lg:px-3 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background border border-border rounded-2xl text-primary lg:text-primary md:text-sm sm:text-sm focus:outline-none focus:border-secondary transition-colors"
               />
               <span className="text-secondary">—</span>
               <input
                 type="date"
                 value={customDateTo}
                 onChange={(e) => setCustomDateTo(e.target.value)}
-                className="px-3 py-2 bg-background border border-border rounded-2xl text-primary focus:outline-none focus:border-secondary transition-colors"
+                className="px-3 py-2 lg:px-3 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background border border-border rounded-2xl text-primary lg:text-primary md:text-sm sm:text-sm focus:outline-none focus:border-secondary transition-colors"
               />
             </div>
           )}
@@ -172,8 +172,8 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 lg:p-6 md:p-3 sm:p-3">
+        <div className="space-y-6 lg:space-y-6 md:space-y-3 sm:space-y-3">
           {/* Financial KPIs */}
           <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
             <div className="bg-background rounded-2xl p-4 border border-border">
@@ -214,47 +214,47 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
           </div>
 
           <HorizontalScroller>
-            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-              <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="w-5 h-5 text-secondary" />
+            <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+              <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <TrendingUp className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                 <span className="text-xs text-secondary">Venituri Totale</span>
               </div>
-              <div className="text-lg font-bold text-primary">{mockFinancialData.totalRevenue.toLocaleString()} RON</div>
+              <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{mockFinancialData.totalRevenue.toLocaleString()} RON</div>
               <div className="text-xs text-secondary">+12% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-              <div className="flex items-center gap-3 mb-2">
-                <Target className="w-5 h-5 text-secondary" />
+            <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+              <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <Target className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                 <span className="text-xs text-secondary">Venit Mediu/Programare</span>
               </div>
-              <div className="text-lg font-bold text-primary">{mockFinancialData.avgRevenuePerAppointment} RON</div>
+              <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{mockFinancialData.avgRevenuePerAppointment} RON</div>
               <div className="text-xs text-secondary">+5% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-              <div className="flex items-center gap-3 mb-2">
-                <Calendar className="w-5 h-5 text-secondary" />
+            <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+              <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <Calendar className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                 <span className="text-xs text-secondary">Total Programări</span>
               </div>
-              <div className="text-lg font-bold text-primary">{mockFinancialData.totalAppointments}</div>
+              <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{mockFinancialData.totalAppointments}</div>
               <div className="text-xs text-secondary">+8% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
-              <div className="flex items-center gap-3 mb-2">
-                <Activity className="w-5 h-5 text-secondary" />
+            <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
+              <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <Activity className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                 <span className="text-xs text-secondary">Grad Ocupare</span>
               </div>
-              <div className="text-lg font-bold text-primary">{mockOperationalData.occupancyRate}%</div>
+              <div className="text-lg lg:text-lg md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">{mockOperationalData.occupancyRate}%</div>
               <div className="text-xs text-secondary">+3% față de perioada precedentă</div>
             </div>
           </HorizontalScroller>
 
           {/* Revenue Evolution Chart */}
-          <div className="bg-background rounded-2xl p-6 border border-border">
-            <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
+          <div className="bg-background rounded-2xl p-6 lg:p-6 md:p-3 sm:p-3 border border-border">
+            <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <BarChart3 className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
               Evoluția Veniturilor
             </h3>
             <div className="h-64 flex items-end justify-between gap-4">
