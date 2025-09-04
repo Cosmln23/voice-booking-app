@@ -17,6 +17,7 @@ import {
   Download,
   Menu
 } from 'lucide-react'
+import HorizontalScroller from '../ui/HorizontalScroller'
 
 
 type TimeInterval = 'week' | 'month' | 'year' | 'custom'
@@ -174,43 +175,81 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
       <div className="flex-1 overflow-y-auto p-6">
         <div className="space-y-6">
           {/* Financial KPIs */}
-          <div className="lg:grid lg:grid-cols-4 lg:gap-4 flex lg:flex-none overflow-x-auto lg:overflow-x-visible gap-3 pb-2 lg:pb-0">
-            <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4">
+            <div className="bg-background rounded-2xl p-4 border border-border">
               <div className="flex items-center gap-3 mb-2">
                 <TrendingUp className="w-5 h-5 text-secondary" />
-                <span className="text-xs lg:text-sm text-secondary">Venituri Totale</span>
+                <span className="text-sm text-secondary">Venituri Totale</span>
               </div>
-              <div className="text-lg lg:text-2xl font-bold text-primary">{mockFinancialData.totalRevenue.toLocaleString()} RON</div>
+              <div className="text-2xl font-bold text-primary">{mockFinancialData.totalRevenue.toLocaleString()} RON</div>
               <div className="text-xs text-secondary">+12% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+            <div className="bg-background rounded-2xl p-4 border border-border">
               <div className="flex items-center gap-3 mb-2">
                 <Target className="w-5 h-5 text-secondary" />
-                <span className="text-xs lg:text-sm text-secondary">Venit Mediu/Programare</span>
+                <span className="text-sm text-secondary">Venit Mediu/Programare</span>
               </div>
-              <div className="text-lg lg:text-2xl font-bold text-primary">{mockFinancialData.avgRevenuePerAppointment} RON</div>
+              <div className="text-2xl font-bold text-primary">{mockFinancialData.avgRevenuePerAppointment} RON</div>
               <div className="text-xs text-secondary">+5% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+            <div className="bg-background rounded-2xl p-4 border border-border">
               <div className="flex items-center gap-3 mb-2">
                 <Calendar className="w-5 h-5 text-secondary" />
-                <span className="text-xs lg:text-sm text-secondary">Total Programări</span>
+                <span className="text-sm text-secondary">Total Programări</span>
               </div>
-              <div className="text-lg lg:text-2xl font-bold text-primary">{mockFinancialData.totalAppointments}</div>
+              <div className="text-2xl font-bold text-primary">{mockFinancialData.totalAppointments}</div>
               <div className="text-xs text-secondary">+8% față de perioada precedentă</div>
             </div>
 
-            <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+            <div className="bg-background rounded-2xl p-4 border border-border">
               <div className="flex items-center gap-3 mb-2">
                 <Activity className="w-5 h-5 text-secondary" />
-                <span className="text-xs lg:text-sm text-secondary">Grad Ocupare</span>
+                <span className="text-sm text-secondary">Grad Ocupare</span>
               </div>
-              <div className="text-lg lg:text-2xl font-bold text-primary">{mockOperationalData.occupancyRate}%</div>
+              <div className="text-2xl font-bold text-primary">{mockOperationalData.occupancyRate}%</div>
               <div className="text-xs text-secondary">+3% față de perioada precedentă</div>
             </div>
           </div>
+
+          <HorizontalScroller>
+            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+              <div className="flex items-center gap-3 mb-2">
+                <TrendingUp className="w-5 h-5 text-secondary" />
+                <span className="text-xs text-secondary">Venituri Totale</span>
+              </div>
+              <div className="text-lg font-bold text-primary">{mockFinancialData.totalRevenue.toLocaleString()} RON</div>
+              <div className="text-xs text-secondary">+12% față de perioada precedentă</div>
+            </div>
+
+            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+              <div className="flex items-center gap-3 mb-2">
+                <Target className="w-5 h-5 text-secondary" />
+                <span className="text-xs text-secondary">Venit Mediu/Programare</span>
+              </div>
+              <div className="text-lg font-bold text-primary">{mockFinancialData.avgRevenuePerAppointment} RON</div>
+              <div className="text-xs text-secondary">+5% față de perioada precedentă</div>
+            </div>
+
+            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+              <div className="flex items-center gap-3 mb-2">
+                <Calendar className="w-5 h-5 text-secondary" />
+                <span className="text-xs text-secondary">Total Programări</span>
+              </div>
+              <div className="text-lg font-bold text-primary">{mockFinancialData.totalAppointments}</div>
+              <div className="text-xs text-secondary">+8% față de perioada precedentă</div>
+            </div>
+
+            <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+              <div className="flex items-center gap-3 mb-2">
+                <Activity className="w-5 h-5 text-secondary" />
+                <span className="text-xs text-secondary">Grad Ocupare</span>
+              </div>
+              <div className="text-lg font-bold text-primary">{mockOperationalData.occupancyRate}%</div>
+              <div className="text-xs text-secondary">+3% față de perioada precedentă</div>
+            </div>
+          </HorizontalScroller>
 
           {/* Revenue Evolution Chart */}
           <div className="bg-background rounded-2xl p-6 border border-border">

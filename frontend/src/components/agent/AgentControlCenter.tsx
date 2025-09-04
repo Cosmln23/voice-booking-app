@@ -28,6 +28,7 @@ import {
   Search,
   Menu
 } from 'lucide-react'
+import HorizontalScroller from '../ui/HorizontalScroller'
 
 
 interface CallLog {
@@ -240,8 +241,8 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 <Settings className="w-5 h-5" />
                 Status Integrări
               </h3>
-              <div className="lg:grid lg:grid-cols-3 lg:gap-4 flex lg:flex-none overflow-x-auto lg:overflow-x-visible gap-3 pb-2 lg:pb-0">
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[200px] lg:min-w-0">
+              <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Brain className="w-5 h-5 text-secondary" />
                     <div>
@@ -252,7 +253,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   {getStatusIcon(integrationStatus.openai.status)}
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[200px] lg:min-w-0">
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5 text-secondary" />
                     <div>
@@ -263,7 +264,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   {getStatusIcon(integrationStatus.googleCalendar.status)}
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[200px] lg:min-w-0">
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl">
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-secondary" />
                     <div>
@@ -274,37 +275,101 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   {getStatusIcon(integrationStatus.telephony.status)}
                 </div>
               </div>
+              
+              <HorizontalScroller>
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Brain className="w-5 h-5 text-secondary" />
+                    <div>
+                      <div className="font-medium text-primary">OpenAI</div>
+                      <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.openai.lastSync}</div>
+                    </div>
+                  </div>
+                  {getStatusIcon(integrationStatus.openai.status)}
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-secondary" />
+                    <div>
+                      <div className="font-medium text-primary">Google Calendar</div>
+                      <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.googleCalendar.lastSync}</div>
+                    </div>
+                  </div>
+                  {getStatusIcon(integrationStatus.googleCalendar.status)}
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-secondary" />
+                    <div>
+                      <div className="font-medium text-primary">Telefonie</div>
+                      <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.telephony.lastSync}</div>
+                    </div>
+                  </div>
+                  {getStatusIcon(integrationStatus.telephony.status)}
+                </div>
+              </HorizontalScroller>
             </div>
 
             {/* Performance Metrics */}
-            <div className="lg:grid lg:grid-cols-3 lg:gap-4 flex lg:flex-none overflow-x-auto lg:overflow-x-visible gap-3 pb-2 lg:pb-0">
-              <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+            <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
+              <div className="bg-background rounded-2xl p-4 border border-border">
                 <div className="flex items-center gap-3 mb-2">
                   <Phone className="w-5 h-5 text-secondary" />
-                  <span className="text-xs lg:text-sm text-secondary">Total Apeluri</span>
+                  <span className="text-sm text-secondary">Total Apeluri</span>
                 </div>
-                <div className="text-lg lg:text-2xl font-bold text-primary">{performanceMetrics.totalCalls}</div>
+                <div className="text-2xl font-bold text-primary">{performanceMetrics.totalCalls}</div>
                 <div className="text-xs text-secondary">Această lună</div>
               </div>
 
-              <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+              <div className="bg-background rounded-2xl p-4 border border-border">
                 <div className="flex items-center gap-3 mb-2">
                   <CheckCircle className="w-5 h-5 text-secondary" />
-                  <span className="text-xs lg:text-sm text-secondary">Rata de Succes</span>
+                  <span className="text-sm text-secondary">Rata de Succes</span>
                 </div>
-                <div className="text-lg lg:text-2xl font-bold text-primary">{performanceMetrics.successRate}%</div>
+                <div className="text-2xl font-bold text-primary">{performanceMetrics.successRate}%</div>
                 <div className="text-xs text-secondary">{performanceMetrics.completedBookings} programări finalizate</div>
               </div>
 
-              <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border min-w-[160px] lg:min-w-0">
+              <div className="bg-background rounded-2xl p-4 border border-border">
                 <div className="flex items-center gap-3 mb-2">
                   <Clock className="w-5 h-5 text-secondary" />
-                  <span className="text-xs lg:text-sm text-secondary">Timp Economisit</span>
+                  <span className="text-sm text-secondary">Timp Economisit</span>
                 </div>
-                <div className="text-lg lg:text-2xl font-bold text-primary">{performanceMetrics.timeSaved}h</div>
+                <div className="text-2xl font-bold text-primary">{performanceMetrics.timeSaved}h</div>
                 <div className="text-xs text-secondary">Durată medie: {performanceMetrics.avgCallDuration}</div>
               </div>
             </div>
+
+            <HorizontalScroller>
+              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <Phone className="w-5 h-5 text-secondary" />
+                  <span className="text-xs text-secondary">Total Apeluri</span>
+                </div>
+                <div className="text-lg font-bold text-primary">{performanceMetrics.totalCalls}</div>
+                <div className="text-xs text-secondary">Această lună</div>
+              </div>
+
+              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <CheckCircle className="w-5 h-5 text-secondary" />
+                  <span className="text-xs text-secondary">Rata de Succes</span>
+                </div>
+                <div className="text-lg font-bold text-primary">{performanceMetrics.successRate}%</div>
+                <div className="text-xs text-secondary">{performanceMetrics.completedBookings} programări finalizate</div>
+              </div>
+
+              <div className="bg-background rounded-2xl p-3 border border-border min-w-[240px] snap-start shrink-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <Clock className="w-5 h-5 text-secondary" />
+                  <span className="text-xs text-secondary">Timp Economisit</span>
+                </div>
+                <div className="text-lg font-bold text-primary">{performanceMetrics.timeSaved}h</div>
+                <div className="text-xs text-secondary">Durată medie: {performanceMetrics.avgCallDuration}</div>
+              </div>
+            </HorizontalScroller>
 
             {/* Costs and Efficiency */}
             <div className="bg-background rounded-2xl p-4 border border-border">
@@ -611,26 +676,47 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             {/* Call Summary */}
             <div className="bg-background rounded-2xl p-4 border border-border">
               <h3 className="font-semibold text-primary mb-3">Rezumat Apeluri</h3>
-              <div className="lg:grid lg:grid-cols-3 lg:gap-4 flex lg:flex-none overflow-x-auto lg:overflow-x-visible gap-3 pb-2 lg:pb-0">
-                <div className="text-center min-w-[100px] lg:min-w-0">
-                  <div className="text-lg lg:text-2xl font-bold text-primary">
+              <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
                     {callLogs.filter(c => c.result === 'completed').length}
                   </div>
-                  <div className="text-xs lg:text-sm text-secondary">Finalizate</div>
+                  <div className="text-sm text-secondary">Finalizate</div>
                 </div>
-                <div className="text-center min-w-[100px] lg:min-w-0">
-                  <div className="text-lg lg:text-2xl font-bold text-primary">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
                     {callLogs.filter(c => c.result === 'transferred').length}
                   </div>
-                  <div className="text-xs lg:text-sm text-secondary">Transferate</div>
+                  <div className="text-sm text-secondary">Transferate</div>
                 </div>
-                <div className="text-center min-w-[100px] lg:min-w-0">
-                  <div className="text-lg lg:text-2xl font-bold text-primary">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
                     {callLogs.filter(c => c.result === 'abandoned').length}
                   </div>
-                  <div className="text-xs lg:text-sm text-secondary">Abandonate</div>
+                  <div className="text-sm text-secondary">Abandonate</div>
                 </div>
               </div>
+
+              <HorizontalScroller>
+                <div className="text-center min-w-[120px] snap-start shrink-0">
+                  <div className="text-lg font-bold text-primary">
+                    {callLogs.filter(c => c.result === 'completed').length}
+                  </div>
+                  <div className="text-xs text-secondary">Finalizate</div>
+                </div>
+                <div className="text-center min-w-[120px] snap-start shrink-0">
+                  <div className="text-lg font-bold text-primary">
+                    {callLogs.filter(c => c.result === 'transferred').length}
+                  </div>
+                  <div className="text-xs text-secondary">Transferate</div>
+                </div>
+                <div className="text-center min-w-[120px] snap-start shrink-0">
+                  <div className="text-lg font-bold text-primary">
+                    {callLogs.filter(c => c.result === 'abandoned').length}
+                  </div>
+                  <div className="text-xs text-secondary">Abandonate</div>
+                </div>
+              </HorizontalScroller>
             </div>
           </div>
         )}
