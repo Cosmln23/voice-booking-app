@@ -391,13 +391,15 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
                     )}
 
                     {hours.breaks.length > 0 && (
-                      <div className="flex items-center gap-2 text-sm text-secondary">
-                        <span>Pauze:</span>
-                        {hours.breaks.map((br, i) => (
-                          <span key={i} className="px-2 py-1 bg-background rounded text-xs">
-                            {br.start}-{br.end} ({br.name})
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-2 text-sm text-secondary overflow-x-auto">
+                        <span className="flex-shrink-0">Pauze:</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {hours.breaks.map((br, i) => (
+                            <span key={i} className="px-2 py-1 bg-background rounded text-xs flex-shrink-0">
+                              {br.start}-{br.end} ({br.name})
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>

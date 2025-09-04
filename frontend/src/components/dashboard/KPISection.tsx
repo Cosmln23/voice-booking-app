@@ -20,7 +20,7 @@ export default function KPISection() {
   const revenueData = [920, 1080, 980, 1180, 1250, 1020, 0]
   
   return (
-    <section className="flex md:grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6 overflow-x-auto md:overflow-visible -mx-4 px-4 snap-x snap-mandatory">
+    <section className="flex md:grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6 overflow-x-auto md:overflow-visible mx-4 snap-x snap-mandatory">
       {/* Programări Azi */}
       <KPICard
         title="Programări Azi"

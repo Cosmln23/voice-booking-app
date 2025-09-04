@@ -18,7 +18,7 @@ export default function HorizontalScroller({
       <div
         className={`
           sm:hidden
-          -mx-4 px-4 pb-2
+          mx-4 pb-2
           flex flex-nowrap gap-3
           overflow-x-auto snap-x snap-mandatory
           [scrollbar-width:none] [-ms-overflow-style:none]
