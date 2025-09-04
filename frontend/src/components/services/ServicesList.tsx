@@ -27,6 +27,7 @@ import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
 import type { Service, ServiceStatus, ServiceCategory } from '../../types'
+import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
 
 interface ServicesListProps {
@@ -360,35 +361,45 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
       {/* Services Table */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
-          <div className="bg-background rounded-2xl border border-border overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-              <div className="col-span-4">Serviciu</div>
-              <div className="col-span-2">Categorie</div>
-              <div className="col-span-2">Durată Totală</div>
-              <div className="col-span-2">Preț</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-1 text-center">Acțiuni</div>
+          {loading && (
+            <div className="bg-background rounded-2xl border border-border p-8 text-center text-secondary">
+              Se încarcă serviciile...
             </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-border">
-              {loading && (
-                <div className="p-8 text-center text-secondary">
-                  Se încarcă serviciile...
-                </div>
-              )}
-              
-              {!loading && !hasData && (
-                <div className="p-8 text-center text-secondary">
-                  Nu există servicii încă.
-                </div>
-              )}
-              
-              {!loading && hasData && filteredServices.map((service) => (
-                <div key={service.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors group">
+          )}
+          
+          {!loading && !hasData && (
+            <div className="bg-background rounded-2xl border border-border p-8 text-center text-secondary">
+              Nu există servicii încă.
+            </div>
+          )}
+          
+          {!loading && hasData && (
+            <ResponsiveTable
+              columns={[
+                { key: 'service', label: 'Serviciu', minWidth: '250px' },
+                { key: 'category', label: 'Categorie', minWidth: '120px' },
+                { key: 'duration', label: 'Durată Totală', minWidth: '150px' },
+                { key: 'price', label: 'Preț', minWidth: '100px' },
+                { key: 'status', label: 'Status', minWidth: '100px' },
+                { key: 'actions', label: 'Acțiuni', minWidth: '200px', className: 'text-center' }
+              ]}
+              mobileMinWidth="1000px"
+            >
+              {filteredServices.map((service) => (
+                <ResponsiveTableRow
+                  key={service.id}
+                  columns={[
+                    { key: 'service', label: 'Serviciu', minWidth: '250px' },
+                    { key: 'category', label: 'Categorie', minWidth: '120px' },
+                    { key: 'duration', label: 'Durată Totală', minWidth: '150px' },
+                    { key: 'price', label: 'Preț', minWidth: '100px' },
+                    { key: 'status', label: 'Status', minWidth: '100px' },
+                    { key: 'actions', label: 'Acțiuni', minWidth: '200px', className: 'text-center' }
+                  ]}
+                  className="group"
+                >
                   {/* Service Info */}
-                  <div className="col-span-4">
+                  <ResponsiveTableCell column={{ key: 'service', label: 'Serviciu', minWidth: '250px' }}>
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
                         {getCategoryIcon(service.category)}
@@ -410,18 +421,18 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                         )}
                       </div>
                     </div>
-                  </div>
+                  </ResponsiveTableCell>
 
                   {/* Category */}
-                  <div className="col-span-2">
+                  <ResponsiveTableCell column={{ key: 'category', label: 'Categorie', minWidth: '120px' }}>
                     <div className="flex items-center gap-2">
                       {getCategoryIcon(service.category)}
                       <span className="text-primary">{service.category === 'individual' ? 'Individual' : 'Pachet'}</span>
                     </div>
-                  </div>
+                  </ResponsiveTableCell>
 
                   {/* Duration */}
-                  <div className="col-span-2">
+                  <ResponsiveTableCell column={{ key: 'duration', label: 'Durată Totală', minWidth: '150px' }}>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-secondary" />
                       <span className="font-semibold text-primary">
@@ -431,24 +442,24 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                     <div className="text-xs text-secondary">
                       Durata: {service.duration}
                     </div>
-                  </div>
+                  </ResponsiveTableCell>
 
                   {/* Price */}
-                  <div className="col-span-2">
+                  <ResponsiveTableCell column={{ key: 'price', label: 'Preț', minWidth: '100px' }}>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-primary">
                         {service.price} {service.currency}
                       </span>
                     </div>
-                  </div>
+                  </ResponsiveTableCell>
 
                   {/* Status */}
-                  <div className="col-span-1">
+                  <ResponsiveTableCell column={{ key: 'status', label: 'Status', minWidth: '100px' }}>
                     {getStatusBadge(service.status)}
-                  </div>
+                  </ResponsiveTableCell>
 
                   {/* Actions */}
-                  <div className="col-span-1 text-center">
+                  <ResponsiveTableCell column={{ key: 'actions', label: 'Acțiuni', minWidth: '200px', className: 'text-center' }}>
                     <div className="relative flex items-center justify-center gap-1">
                       <button 
                         onClick={() => setSelectedService(service)}
@@ -497,11 +508,11 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
                         </div>
                       )}
                     </div>
-                  </div>
-                </div>
+                  </ResponsiveTableCell>
+                </ResponsiveTableRow>
               ))}
-            </div>
-          </div>
+            </ResponsiveTable>
+          )}
 
           {filteredServices.length === 0 && (
             <div className="text-center py-12">

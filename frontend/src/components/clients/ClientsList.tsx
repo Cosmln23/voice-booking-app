@@ -26,6 +26,7 @@ import ClientProfile from './ClientProfile'
 import AddClientModal from './AddClientModal'
 import { useClients } from '../../hooks'
 import type { Client as ApiClient, ClientStatus } from '../../types'
+import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
 // Extended client interface for component compatibility
 interface Client {
@@ -405,100 +406,108 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
       {/* Clients Table */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
-          <div className="bg-background rounded-2xl border border-border overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-11 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-              <div className="col-span-3">Client</div>
-              <div className="col-span-2 hidden lg:block">Contact</div>
-              <div className="col-span-2">Ultima Vizită</div>
-              <div className="col-span-1 text-center">Vizite</div>
-              <div className="col-span-2">Status</div>
-              <div className="col-span-1 text-center">Acțiuni</div>
-            </div>
-
-            {/* Table Body */}
-            <div className="divide-y divide-border">
-              {filteredClients.map((client) => (
-                <div key={client.id} className="grid grid-cols-11 gap-4 p-4 hover:bg-card-hover transition-colors group">
-                  {/* Client Info */}
-                  <div className="col-span-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-primary font-semibold">
-                        {client.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-medium text-primary">{client.name}</div>
-                        {client.nextAppointment && (
-                          <div className="text-xs text-secondary">
-                            Următor: {formatDate(client.nextAppointment)}
-                          </div>
-                        )}
-                      </div>
+          <ResponsiveTable
+            columns={[
+              { key: 'client', label: 'Client', minWidth: '200px' },
+              { key: 'contact', label: 'Contact', minWidth: '200px', hideOnMobile: true },
+              { key: 'lastVisit', label: 'Ultima Vizită', minWidth: '150px' },
+              { key: 'visits', label: 'Vizite', minWidth: '80px', className: 'text-center' },
+              { key: 'status', label: 'Status', minWidth: '120px' },
+              { key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }
+            ]}
+            mobileMinWidth="800px"
+          >
+            {filteredClients.map((client) => (
+              <ResponsiveTableRow
+                key={client.id}
+                columns={[
+                  { key: 'client', label: 'Client', minWidth: '200px' },
+                  { key: 'contact', label: 'Contact', minWidth: '200px', hideOnMobile: true },
+                  { key: 'lastVisit', label: 'Ultima Vizită', minWidth: '150px' },
+                  { key: 'visits', label: 'Vizite', minWidth: '80px', className: 'text-center' },
+                  { key: 'status', label: 'Status', minWidth: '120px' },
+                  { key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }
+                ]}
+                className="group"
+              >
+                {/* Client Info */}
+                <ResponsiveTableCell column={{ key: 'client', label: 'Client', minWidth: '200px' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-primary font-semibold">
+                      {client.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-primary">{client.name}</div>
+                      {client.nextAppointment && (
+                        <div className="text-xs text-secondary">
+                          Următor: {formatDate(client.nextAppointment)}
+                        </div>
+                      )}
                     </div>
                   </div>
+                </ResponsiveTableCell>
 
-                  {/* Contact - Hidden on mobile */}
-                  <div className="col-span-2 hidden lg:block">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-primary">
-                        <Phone className="w-3 h-3 text-secondary" />
-                        {client.phone}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-secondary">
-                        <Mail className="w-3 h-3" />
-                        {client.email}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Last Visit */}
-                  <div className="col-span-2">
+                {/* Contact - Hidden on mobile */}
+                <ResponsiveTableCell column={{ key: 'contact', label: 'Contact', minWidth: '200px', hideOnMobile: true }}>
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-sm text-primary">
-                      <Calendar className="w-3 h-3 text-secondary" />
-                      {formatDate(client.lastVisit)}
+                      <Phone className="w-3 h-3 text-secondary" />
+                      {client.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-secondary">
+                      <Mail className="w-3 h-3" />
+                      {client.email}
                     </div>
                   </div>
+                </ResponsiveTableCell>
 
-                  {/* Total Visits */}
-                  <div className="col-span-1 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-secondary/20 text-primary rounded-full text-sm font-semibold">
-                      {client.totalVisits}
-                    </span>
+                {/* Last Visit */}
+                <ResponsiveTableCell column={{ key: 'lastVisit', label: 'Ultima Vizită', minWidth: '150px' }}>
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <Calendar className="w-3 h-3 text-secondary" />
+                    {formatDate(client.lastVisit)}
                   </div>
+                </ResponsiveTableCell>
 
-                  {/* Status */}
-                  <div className="col-span-2">
-                    {getStatusBadge(client.status)}
-                  </div>
+                {/* Total Visits */}
+                <ResponsiveTableCell column={{ key: 'visits', label: 'Vizite', minWidth: '80px', className: 'text-center' }}>
+                  <span className="inline-flex items-center justify-center w-8 h-8 bg-secondary/20 text-primary rounded-full text-sm font-semibold">
+                    {client.totalVisits}
+                  </span>
+                </ResponsiveTableCell>
 
-                  {/* Actions */}
-                  <div className="col-span-1 text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <button 
-                        onClick={() => setSelectedClient(client)}
-                        className="p-1 text-secondary hover:text-primary rounded transition-colors"
-                        title="Vezi profil"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-1 text-secondary hover:text-primary rounded transition-colors"
-                        title="Editează"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-1 text-secondary hover:text-primary rounded transition-colors"
-                        title="Mai multe opțiuni"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
+                {/* Status */}
+                <ResponsiveTableCell column={{ key: 'status', label: 'Status', minWidth: '120px' }}>
+                  {getStatusBadge(client.status)}
+                </ResponsiveTableCell>
+
+                {/* Actions */}
+                <ResponsiveTableCell column={{ key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }}>
+                  <div className="flex items-center justify-center gap-1">
+                    <button 
+                      onClick={() => setSelectedClient(client)}
+                      className="p-1 text-secondary hover:text-primary rounded transition-colors"
+                      title="Vezi profil"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button 
+                      className="p-1 text-secondary hover:text-primary rounded transition-colors"
+                      title="Editează"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      className="p-1 text-secondary hover:text-primary rounded transition-colors"
+                      title="Mai multe opțiuni"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                </ResponsiveTableCell>
+              </ResponsiveTableRow>
+            ))}
+          </ResponsiveTable>
 
           {filteredClients.length === 0 && (
             <div className="text-center py-12">

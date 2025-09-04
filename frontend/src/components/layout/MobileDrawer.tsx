@@ -13,21 +13,25 @@ import {
 } from 'lucide-react'
 
 
+type PageType = 'dashboard' | 'today' | 'upcoming' | 'pending' | 'archive' | 'clients' | 'services' | 'statistics' | 'agent' | 'settings'
+
 interface MobileDrawerProps {
   isOpen: boolean
   onClose: () => void
+  currentPage?: PageType
+  onPageChange?: (page: PageType) => void
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '#', icon: LayoutDashboard, current: true },
-  { name: 'Calendar', href: '#', icon: Calendar, current: false },
-  { name: 'Clienți', href: '#', icon: Users, current: false },
-  { name: 'Servicii & Prețuri', href: '#', icon: Scissors, current: false },
-  { name: 'Statistici', href: '#', icon: TrendingUp, current: false },
-  { name: 'Setări Agent Vocal', href: '#', icon: Mic, current: false },
+  { name: 'Dashboard', key: 'dashboard', icon: LayoutDashboard },
+  { name: 'Clienți', key: 'clients', icon: Users },
+  { name: 'Servicii', key: 'services', icon: Scissors },
+  { name: 'Statistici', key: 'statistics', icon: TrendingUp },
+  { name: 'Agent Vocal', key: 'agent', icon: Mic },
+  { name: 'Setări', key: 'settings', icon: Calendar },
 ]
 
-export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+export default function MobileDrawer({ isOpen, onClose, currentPage = 'dashboard', onPageChange }: MobileDrawerProps) {
   if (!isOpen) return null
 
   return (
@@ -54,23 +58,27 @@ export default function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         
         <nav className="space-y-1">
           {navigation.map((item) => (
-            <a
+            <button
               key={item.name}
-              href={item.href}
               className={clsx(
-                'flex items-center gap-3 px-3 py-2 rounded-2xl text-sm border transition-colors',
-                item.current
-                  ? 'bg-card-hover border-border'
+                'w-full flex items-center gap-3 px-3 py-2 rounded-2xl text-sm border transition-colors text-left',
+                currentPage === item.key
+                  ? 'bg-card-hover border-border text-primary'
                   : 'text-secondary hover:text-primary hover:bg-card-hover border-transparent hover:border-border'
               )}
-              onClick={onClose}
+              onClick={() => {
+                if (onPageChange) {
+                  onPageChange(item.key as PageType)
+                }
+                onClose() // Auto-close drawer after navigation
+              }}
             >
               <item.icon className={clsx(
                 'w-4.5 h-4.5',
-                item.current ? 'text-primary' : ''
+                currentPage === item.key ? 'text-primary' : ''
               )} />
               {item.name}
-            </a>
+            </button>
           ))}
         </nav>
       </div>

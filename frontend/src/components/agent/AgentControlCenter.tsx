@@ -29,6 +29,7 @@ import {
   Menu
 } from 'lucide-react'
 import HorizontalScroller from '../ui/HorizontalScroller'
+import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
 
 interface CallLog {
@@ -552,48 +553,58 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             {/* Dictionary Table */}
-            <div className="bg-background rounded-2xl border border-border overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-                <div className="col-span-4">Termen Client</div>
-                <div className="col-span-4">Serviciu Oficial</div>
-                <div className="col-span-2">Frecvență</div>
-                <div className="col-span-2 text-center">Acțiuni</div>
-              </div>
-              
-              <div className="divide-y divide-border">
-                {dictionary.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors">
-                    <div className="col-span-4">
-                      <span className="font-medium text-primary">&quot;{item.clientTerm}&quot;</span>
-                    </div>
-                    <div className="col-span-4">
-                      <span className="text-primary">{item.officialService}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-card rounded-full h-2">
-                          <div 
-                            className="bg-secondary/30 h-2 rounded-full"
-                            style={{ width: `${(item.frequency / 70) * 100}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs text-secondary">{item.frequency}</span>
+            <ResponsiveTable
+              columns={[
+                { key: 'clientTerm', label: 'Termen Client', minWidth: '200px' },
+                { key: 'officialService', label: 'Serviciu Oficial', minWidth: '200px' },
+                { key: 'frequency', label: 'Frecvență', minWidth: '150px' },
+                { key: 'actions', label: 'Acțiuni', minWidth: '100px', className: 'text-center' }
+              ]}
+              mobileMinWidth="700px"
+            >
+              {dictionary.map((item, index) => (
+                <ResponsiveTableRow
+                  key={index}
+                  columns={[
+                    { key: 'clientTerm', label: 'Termen Client', minWidth: '200px' },
+                    { key: 'officialService', label: 'Serviciu Oficial', minWidth: '200px' },
+                    { key: 'frequency', label: 'Frecvență', minWidth: '150px' },
+                    { key: 'actions', label: 'Acțiuni', minWidth: '100px', className: 'text-center' }
+                  ]}
+                >
+                  <ResponsiveTableCell column={{ key: 'clientTerm', label: 'Termen Client', minWidth: '200px' }}>
+                    <span className="font-medium text-primary">&quot;{item.clientTerm}&quot;</span>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'officialService', label: 'Serviciu Oficial', minWidth: '200px' }}>
+                    <span className="text-primary">{item.officialService}</span>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'frequency', label: 'Frecvență', minWidth: '150px' }}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-card rounded-full h-2">
+                        <div 
+                          className="bg-secondary/30 h-2 rounded-full"
+                          style={{ width: `${(item.frequency / 70) * 100}%` }}
+                        ></div>
                       </div>
+                      <span className="text-xs text-secondary">{item.frequency}</span>
                     </div>
-                    <div className="col-span-2 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
-                          <XCircle className="w-4 h-4" />
-                        </button>
-                      </div>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'actions', label: 'Acțiuni', minWidth: '100px', className: 'text-center' }}>
+                    <div className="flex items-center justify-center gap-1">
+                      <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
+                        <XCircle className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  </ResponsiveTableCell>
+                </ResponsiveTableRow>
+              ))}
+            </ResponsiveTable>
           </div>
         )}
 
@@ -622,56 +633,70 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             {/* Call Logs Table */}
-            <div className="bg-background rounded-2xl border border-border overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-                <div className="col-span-2">Data/Ora</div>
-                <div className="col-span-2">Număr Apelant</div>
-                <div className="col-span-3">Intenție Detectată</div>
-                <div className="col-span-2">Rezultat</div>
-                <div className="col-span-1">Durată</div>
-                <div className="col-span-2 text-center">Acțiuni</div>
-              </div>
-              
-              <div className="divide-y divide-border">
-                {callLogs.map((call) => (
-                  <div key={call.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors">
-                    <div className="col-span-2">
-                      <div className="text-sm text-primary">{call.date}</div>
-                      <div className="text-xs text-secondary">{call.time}</div>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="text-primary font-mono">{call.phoneNumber}</span>
-                    </div>
-                    <div className="col-span-3">
-                      <span className="text-primary">{call.detectedIntent}</span>
-                    </div>
-                    <div className="col-span-2">
-                      {getResultBadge(call.result)}
-                    </div>
-                    <div className="col-span-1">
-                      <span className="text-secondary font-mono">{call.duration}</span>
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        {call.hasTranscript && (
-                          <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Vezi transcriere">
-                            <FileText className="w-4 h-4" />
-                          </button>
-                        )}
-                        {call.hasRecording && (
-                          <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Ascultă înregistrarea">
-                            <Play className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Vezi detalii">
-                          <Eye className="w-4 h-4" />
+            <ResponsiveTable
+              columns={[
+                { key: 'dateTime', label: 'Data/Ora', minWidth: '120px' },
+                { key: 'phoneNumber', label: 'Număr Apelant', minWidth: '150px' },
+                { key: 'intent', label: 'Intenție Detectată', minWidth: '200px' },
+                { key: 'result', label: 'Rezultat', minWidth: '120px' },
+                { key: 'duration', label: 'Durată', minWidth: '80px' },
+                { key: 'actions', label: 'Acțiuni', minWidth: '150px', className: 'text-center' }
+              ]}
+              mobileMinWidth="900px"
+            >
+              {callLogs.map((call) => (
+                <ResponsiveTableRow
+                  key={call.id}
+                  columns={[
+                    { key: 'dateTime', label: 'Data/Ora', minWidth: '120px' },
+                    { key: 'phoneNumber', label: 'Număr Apelant', minWidth: '150px' },
+                    { key: 'intent', label: 'Intenție Detectată', minWidth: '200px' },
+                    { key: 'result', label: 'Rezultat', minWidth: '120px' },
+                    { key: 'duration', label: 'Durată', minWidth: '80px' },
+                    { key: 'actions', label: 'Acțiuni', minWidth: '150px', className: 'text-center' }
+                  ]}
+                >
+                  <ResponsiveTableCell column={{ key: 'dateTime', label: 'Data/Ora', minWidth: '120px' }}>
+                    <div className="text-sm text-primary">{call.date}</div>
+                    <div className="text-xs text-secondary">{call.time}</div>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'phoneNumber', label: 'Număr Apelant', minWidth: '150px' }}>
+                    <span className="text-primary font-mono">{call.phoneNumber}</span>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'intent', label: 'Intenție Detectată', minWidth: '200px' }}>
+                    <span className="text-primary">{call.detectedIntent}</span>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'result', label: 'Rezultat', minWidth: '120px' }}>
+                    {getResultBadge(call.result)}
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'duration', label: 'Durată', minWidth: '80px' }}>
+                    <span className="text-secondary font-mono">{call.duration}</span>
+                  </ResponsiveTableCell>
+
+                  <ResponsiveTableCell column={{ key: 'actions', label: 'Acțiuni', minWidth: '150px', className: 'text-center' }}>
+                    <div className="flex items-center justify-center gap-1">
+                      {call.hasTranscript && (
+                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Vezi transcriere">
+                          <FileText className="w-4 h-4" />
                         </button>
-                      </div>
+                      )}
+                      {call.hasRecording && (
+                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Ascultă înregistrarea">
+                          <Play className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button className="p-1 text-secondary hover:text-primary rounded transition-colors" title="Vezi detalii">
+                        <Eye className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  </ResponsiveTableCell>
+                </ResponsiveTableRow>
+              ))}
+            </ResponsiveTable>
 
             {/* Call Summary */}
             <div className="bg-background rounded-2xl p-4 border border-border">

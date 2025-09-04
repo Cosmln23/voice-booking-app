@@ -28,6 +28,7 @@ import {
   Crown,
   Menu
 } from 'lucide-react'
+import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
 
 interface BusinessHours {
@@ -629,59 +630,71 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
               </div>
 
               {/* Users Table */}
-              <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-                  <div className="col-span-3">Utilizator</div>
-                  <div className="col-span-3">Email</div>
-                  <div className="col-span-2">Rol</div>
-                  <div className="col-span-2">Ultima Conectare</div>
-                  <div className="col-span-2 text-center">Acțiuni</div>
-                </div>
-                
-                <div className="divide-y divide-border">
-                  {users.map((user) => (
-                    <div key={user.id} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors">
-                      <div className="col-span-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-primary font-semibold text-sm">
-                            {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-medium text-primary">{user.name}</div>
-                            <div className={clsx(
-                              "text-xs",
-                              user.status === 'active' ? 'text-primary' : 'text-secondary'
-                            )}>
-                              {user.status === 'active' ? 'Activ' : 'Inactiv'}
-                            </div>
+              <ResponsiveTable
+                columns={[
+                  { key: 'user', label: 'Utilizator', minWidth: '200px' },
+                  { key: 'email', label: 'Email', minWidth: '200px' },
+                  { key: 'role', label: 'Rol', minWidth: '120px' },
+                  { key: 'lastLogin', label: 'Ultima Conectare', minWidth: '150px' },
+                  { key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }
+                ]}
+                mobileMinWidth="800px"
+              >
+                {users.map((user) => (
+                  <ResponsiveTableRow
+                    key={user.id}
+                    columns={[
+                      { key: 'user', label: 'Utilizator', minWidth: '200px' },
+                      { key: 'email', label: 'Email', minWidth: '200px' },
+                      { key: 'role', label: 'Rol', minWidth: '120px' },
+                      { key: 'lastLogin', label: 'Ultima Conectare', minWidth: '150px' },
+                      { key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }
+                    ]}
+                  >
+                    <ResponsiveTableCell column={{ key: 'user', label: 'Utilizator', minWidth: '200px' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-primary font-semibold text-sm">
+                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium text-primary">{user.name}</div>
+                          <div className={clsx(
+                            "text-xs",
+                            user.status === 'active' ? 'text-primary' : 'text-secondary'
+                          )}>
+                            {user.status === 'active' ? 'Activ' : 'Inactiv'}
                           </div>
                         </div>
                       </div>
-                      <div className="col-span-3">
-                        <span className="text-primary">{user.email}</span>
-                      </div>
-                      <div className="col-span-2">
-                        {getRoleBadge(user.role)}
-                      </div>
-                      <div className="col-span-2">
-                        <div className="text-sm text-primary">{user.lastLogin}</div>
-                      </div>
-                      <div className="col-span-2 text-center">
-                        <div className="flex items-center justify-center gap-1">
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'email', label: 'Email', minWidth: '200px' }}>
+                      <span className="text-primary">{user.email}</span>
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'role', label: 'Rol', minWidth: '120px' }}>
+                      {getRoleBadge(user.role)}
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'lastLogin', label: 'Ultima Conectare', minWidth: '150px' }}>
+                      <div className="text-sm text-primary">{user.lastLogin}</div>
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'actions', label: 'Acțiuni', minWidth: '120px', className: 'text-center' }}>
+                      <div className="flex items-center justify-center gap-1">
+                        <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        {user.role !== 'Admin' && (
                           <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
-                            <Edit className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
-                          {user.role !== 'Admin' && (
-                            <button className="p-1 text-secondary hover:text-primary rounded transition-colors">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    </ResponsiveTableCell>
+                  </ResponsiveTableRow>
+                ))}
+              </ResponsiveTable>
             </div>
           </div>
         )}
@@ -745,42 +758,52 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
                 Istoric Facturare
               </h3>
 
-              <div className="bg-card rounded-2xl border border-border overflow-hidden">
-                <div className="grid grid-cols-12 gap-4 p-4 border-b border-border text-xs font-semibold text-secondary uppercase tracking-wider">
-                  <div className="col-span-3">Data</div>
-                  <div className="col-span-3">Sumă</div>
-                  <div className="col-span-3">Status</div>
-                  <div className="col-span-3">Factură</div>
-                </div>
-                
-                <div className="divide-y divide-border">
-                  {billingInfo.billingHistory.map((bill, index) => (
-                    <div key={index} className="grid grid-cols-12 gap-4 p-4 hover:bg-card-hover transition-colors">
-                      <div className="col-span-3">
-                        <span className="text-primary">{bill.date}</span>
-                      </div>
-                      <div className="col-span-3">
-                        <span className="font-semibold text-primary">{bill.amount}</span>
-                      </div>
-                      <div className="col-span-3">
-                        <span className={clsx(
-                          "inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border",
-                          bill.status === 'paid' 
-                            ? 'bg-secondary/20 text-primary border-border'
-                            : 'bg-secondary/20 text-secondary border-border'
-                        )}>
-                          {bill.status === 'paid' ? 'Plătit' : 'Nepilătit'}
-                        </span>
-                      </div>
-                      <div className="col-span-3">
-                        <button className="text-secondary hover:text-primary underline text-sm transition-colors">
-                          {bill.invoice}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ResponsiveTable
+                columns={[
+                  { key: 'date', label: 'Data', minWidth: '120px' },
+                  { key: 'amount', label: 'Sumă', minWidth: '120px' },
+                  { key: 'status', label: 'Status', minWidth: '120px' },
+                  { key: 'invoice', label: 'Factură', minWidth: '150px' }
+                ]}
+                mobileMinWidth="600px"
+              >
+                {billingInfo.billingHistory.map((bill, index) => (
+                  <ResponsiveTableRow
+                    key={index}
+                    columns={[
+                      { key: 'date', label: 'Data', minWidth: '120px' },
+                      { key: 'amount', label: 'Sumă', minWidth: '120px' },
+                      { key: 'status', label: 'Status', minWidth: '120px' },
+                      { key: 'invoice', label: 'Factură', minWidth: '150px' }
+                    ]}
+                  >
+                    <ResponsiveTableCell column={{ key: 'date', label: 'Data', minWidth: '120px' }}>
+                      <span className="text-primary">{bill.date}</span>
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'amount', label: 'Sumă', minWidth: '120px' }}>
+                      <span className="font-semibold text-primary">{bill.amount}</span>
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'status', label: 'Status', minWidth: '120px' }}>
+                      <span className={clsx(
+                        "inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium border",
+                        bill.status === 'paid' 
+                          ? 'bg-secondary/20 text-primary border-border'
+                          : 'bg-secondary/20 text-secondary border-border'
+                      )}>
+                        {bill.status === 'paid' ? 'Plătit' : 'Nepilătit'}
+                      </span>
+                    </ResponsiveTableCell>
+
+                    <ResponsiveTableCell column={{ key: 'invoice', label: 'Factură', minWidth: '150px' }}>
+                      <button className="text-secondary hover:text-primary underline text-sm transition-colors">
+                        {bill.invoice}
+                      </button>
+                    </ResponsiveTableCell>
+                  </ResponsiveTableRow>
+                ))}
+              </ResponsiveTable>
             </div>
           </div>
         )}

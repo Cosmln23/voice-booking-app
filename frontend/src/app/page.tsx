@@ -148,6 +148,8 @@ export default function Dashboard() {
       <MobileDrawer 
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
       />
     </div>
   )
