@@ -32,6 +32,8 @@ export default function Dashboard() {
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page)
+    // Force mobile view to main when changing pages
+    setMobileView('main')
   }
 
   const renderMainContent = () => {

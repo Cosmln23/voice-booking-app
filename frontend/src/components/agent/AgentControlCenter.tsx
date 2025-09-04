@@ -176,7 +176,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
   return (
     <div className="flex-1 flex flex-col bg-card h-full">
       {/* Header */}
-      <div className="p-6 border-b border-border">
+      <div className="p-6 lg:p-6 md:p-3 sm:p-3 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             {isMobile && (
@@ -187,20 +187,20 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Mic className="w-8 h-8 text-secondary" />
+            <Mic className="w-8 h-8 lg:w-8 lg:h-8 md:w-6 md:h-6 sm:w-6 sm:h-6 text-secondary" />
             <div>
-              <h1 className="text-3xl font-bold text-primary">Agent Vocal</h1>
-              <p className="text-base text-secondary">
+              <h1 className="text-3xl lg:text-3xl md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">Agent Vocal</h1>
+              <p className="text-base lg:text-base md:text-sm sm:text-sm text-secondary">
                 Centru control AI
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-2xl border border-border">
+          <div className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 lg:px-3 lg:py-1 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background rounded-2xl border border-border">
               <Activity className="w-4 h-4 text-secondary animate-pulse" />
               <span className="text-sm text-primary">Activ</span>
             </div>
-            <button className="flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
+            <button className="hidden lg:flex md:flex items-center px-4 py-2 bg-background text-secondary border border-border rounded-2xl hover:text-primary hover:border-secondary transition-colors">
               <Download className="w-4 h-4 mr-2" />
               Export Raport
             </button>
@@ -208,7 +208,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-8">
+        <div className="flex gap-8 lg:gap-8 md:gap-3 sm:gap-3">
           {[
             { key: 'overview', label: 'Prezentare Generală', icon: Activity },
             { key: 'config', label: 'Configurare', icon: Settings },
@@ -219,27 +219,27 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={clsx(
-                'flex items-center gap-2 py-3 border-b-2 transition-colors',
+                'flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3 py-3 lg:py-3 md:py-2 sm:py-2 border-b-2 transition-colors text-sm',
                 activeTab === tab.key
                   ? 'border-secondary text-primary'
                   : 'border-transparent text-secondary hover:text-primary'
               )}
             >
               <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <span className="lg:block md:text-sm sm:text-sm">{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 lg:p-6 md:p-3 sm:p-3">
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Integration Status */}
-            <div className="bg-background rounded-2xl p-4 border border-border">
-              <h3 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
+            <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                <Settings className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Status Integrări
               </h3>
               <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
@@ -278,33 +278,33 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               </div>
               
               <HorizontalScroller>
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
-                  <div className="flex items-center gap-3">
-                    <Brain className="w-5 h-5 text-secondary" />
+                <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
+                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                    <Brain className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
-                      <div className="font-medium text-primary">OpenAI</div>
+                      <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">OpenAI</div>
                       <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.openai.lastSync}</div>
                     </div>
                   </div>
                   {getStatusIcon(integrationStatus.openai.status)}
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-secondary" />
+                <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
+                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                    <Calendar className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
-                      <div className="font-medium text-primary">Google Calendar</div>
+                      <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">Google Calendar</div>
                       <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.googleCalendar.lastSync}</div>
                     </div>
                   </div>
                   {getStatusIcon(integrationStatus.googleCalendar.status)}
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-card rounded-2xl min-w-[240px] snap-start shrink-0">
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-secondary" />
+                <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
+                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                    <Phone className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
-                      <div className="font-medium text-primary">Telefonie</div>
+                      <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">Telefonie</div>
                       <div className="text-xs text-secondary">Ultimul sync: {integrationStatus.telephony.lastSync}</div>
                     </div>
                   </div>
