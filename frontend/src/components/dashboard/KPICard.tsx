@@ -32,7 +32,7 @@ export default function KPICard({
   return (
     <div 
       className={clsx(
-        'group relative overflow-hidden rounded-lg bg-card border border-border p-4 hover:border-border-hover hover:bg-card-hover transition-colors min-w-[260px] md:min-w-0 snap-start shadow-sm hover:shadow-md transition-shadow',
+        'group relative overflow-hidden rounded-lg bg-card border border-border p-4 hover:border-border-hover hover:bg-card-hover transition-colors min-w-[260px] md:min-w-0 snap-start',
         className
       )}
     >

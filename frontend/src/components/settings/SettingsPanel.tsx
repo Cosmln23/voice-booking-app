@@ -347,8 +347,8 @@ export default function SettingsPanel({ isMobile, onMobileToggle }: SettingsPane
               <div className="space-y-4">
                 {Object.entries(businessHours).map(([day, hours]) => (
                   <div key={day} className="flex items-center gap-4 p-4 bg-card rounded-2xl">
-                    <div className="w-24">
-                      <span className="font-medium text-primary">{getDayName(day)}</span>
+                    <div className="w-24 flex-shrink-0">
+                      <span className="font-medium text-primary truncate block">{getDayName(day)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">

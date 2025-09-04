@@ -208,7 +208,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-8 lg:gap-8 md:gap-3 sm:gap-3">
+        <HorizontalScroller className="flex gap-8 lg:gap-8 md:gap-3 sm:gap-3">
           {[
             { key: 'overview', label: 'Prezentare Generală', icon: Activity },
             { key: 'config', label: 'Configurare', icon: Settings },
@@ -229,7 +229,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               <span className="lg:block md:text-sm sm:text-sm">{tab.label}</span>
             </button>
           ))}
-        </div>
+        </HorizontalScroller>
       </div>
 
       {/* Content */}
@@ -553,14 +553,15 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             {/* Dictionary Table */}
-            <ResponsiveTable
-              columns={[
-                { key: 'clientTerm', label: 'Termen Client', minWidth: '200px' },
-                { key: 'officialService', label: 'Serviciu Oficial', minWidth: '200px' },
-                { key: 'frequency', label: 'Frecvență', minWidth: '150px' },
-                { key: 'actions', label: 'Acțiuni', minWidth: '100px', className: 'text-center' }
-              ]}
-              mobileMinWidth="700px"
+            <HorizontalScroller>
+              <ResponsiveTable
+                columns={[
+                  { key: 'clientTerm', label: 'Termen Client', minWidth: '200px' },
+                  { key: 'officialService', label: 'Serviciu Oficial', minWidth: '200px' },
+                  { key: 'frequency', label: 'Frecvență', minWidth: '150px' },
+                  { key: 'actions', label: 'Acțiuni', minWidth: '100px', className: 'text-center' }
+                ]}
+                mobileMinWidth="700px"
             >
               {dictionary.map((item, index) => (
                 <ResponsiveTableRow
@@ -604,7 +605,8 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   </ResponsiveTableCell>
                 </ResponsiveTableRow>
               ))}
-            </ResponsiveTable>
+              </ResponsiveTable>
+            </HorizontalScroller>
           </div>
         )}
 
@@ -633,16 +635,17 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
             </div>
 
             {/* Call Logs Table */}
-            <ResponsiveTable
-              columns={[
-                { key: 'dateTime', label: 'Data/Ora', minWidth: '120px' },
-                { key: 'phoneNumber', label: 'Număr Apelant', minWidth: '150px' },
-                { key: 'intent', label: 'Intenție Detectată', minWidth: '200px' },
-                { key: 'result', label: 'Rezultat', minWidth: '120px' },
-                { key: 'duration', label: 'Durată', minWidth: '80px' },
-                { key: 'actions', label: 'Acțiuni', minWidth: '150px', className: 'text-center' }
-              ]}
-              mobileMinWidth="900px"
+            <HorizontalScroller>
+              <ResponsiveTable
+                columns={[
+                  { key: 'dateTime', label: 'Data/Ora', minWidth: '120px' },
+                  { key: 'phoneNumber', label: 'Număr Apelant', minWidth: '150px' },
+                  { key: 'intent', label: 'Intenție Detectată', minWidth: '200px' },
+                  { key: 'result', label: 'Rezultat', minWidth: '120px' },
+                  { key: 'duration', label: 'Durată', minWidth: '80px' },
+                  { key: 'actions', label: 'Acțiuni', minWidth: '150px', className: 'text-center' }
+                ]}
+                mobileMinWidth="900px"
             >
               {callLogs.map((call) => (
                 <ResponsiveTableRow
@@ -696,7 +699,8 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   </ResponsiveTableCell>
                 </ResponsiveTableRow>
               ))}
-            </ResponsiveTable>
+              </ResponsiveTable>
+            </HorizontalScroller>
 
             {/* Call Summary */}
             <div className="bg-background rounded-2xl p-4 border border-border">
