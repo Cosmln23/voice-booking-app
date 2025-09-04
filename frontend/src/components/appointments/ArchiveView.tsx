@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 
 import { useState } from 'react'
+import HorizontalScroller from '../ui/HorizontalScroller'
 
 interface ArchiveViewProps {
   isMobile?: boolean
@@ -157,19 +158,36 @@ export default function ArchiveView({ isMobile, onMobileToggle }: ArchiveViewPro
         </div>
 
         {/* Stats */}
-        <div className="lg:grid lg:grid-cols-3 lg:gap-4 flex lg:flex-none overflow-x-auto lg:overflow-x-visible gap-3 pb-2 lg:pb-0 mb-6">
-          <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border text-center min-w-[140px] lg:min-w-0">
-            <div className="text-lg lg:text-2xl font-bold text-primary">{completedCount}</div>
-            <div className="text-xs lg:text-sm text-secondary">Programări Finalizate</div>
+        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4 mb-6">
+          <div className="bg-background rounded-2xl p-4 border border-border text-center">
+            <div className="text-2xl font-bold text-primary">{completedCount}</div>
+            <div className="text-sm text-secondary">Programări Finalizate</div>
           </div>
-          <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border text-center min-w-[140px] lg:min-w-0">
-            <div className="text-lg lg:text-2xl font-bold text-primary">{totalRevenue} RON</div>
-            <div className="text-xs lg:text-sm text-secondary">Venituri Generate</div>
+          <div className="bg-background rounded-2xl p-4 border border-border text-center">
+            <div className="text-2xl font-bold text-primary">{totalRevenue} RON</div>
+            <div className="text-sm text-secondary">Venituri Generate</div>
           </div>
-          <div className="bg-background rounded-2xl p-3 lg:p-4 border border-border text-center min-w-[140px] lg:min-w-0">
-            <div className="text-lg lg:text-2xl font-bold text-primary">{Math.round((completedCount / archivedAppointments.length) * 100)}%</div>
-            <div className="text-xs lg:text-sm text-secondary">Rata de Finalizare</div>
+          <div className="bg-background rounded-2xl p-4 border border-border text-center">
+            <div className="text-2xl font-bold text-primary">{Math.round((completedCount / archivedAppointments.length) * 100)}%</div>
+            <div className="text-sm text-secondary">Rata de Finalizare</div>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <HorizontalScroller>
+            <div className="bg-background rounded-2xl p-3 border border-border text-center min-w-[200px] snap-start shrink-0">
+              <div className="text-lg font-bold text-primary">{completedCount}</div>
+              <div className="text-xs text-secondary">Programări Finalizate</div>
+            </div>
+            <div className="bg-background rounded-2xl p-3 border border-border text-center min-w-[200px] snap-start shrink-0">
+              <div className="text-lg font-bold text-primary">{totalRevenue} RON</div>
+              <div className="text-xs text-secondary">Venituri Generate</div>
+            </div>
+            <div className="bg-background rounded-2xl p-3 border border-border text-center min-w-[200px] snap-start shrink-0">
+              <div className="text-lg font-bold text-primary">{Math.round((completedCount / archivedAppointments.length) * 100)}%</div>
+              <div className="text-xs text-secondary">Rata de Finalizare</div>
+            </div>
+          </HorizontalScroller>
         </div>
 
         {/* Search and Filter */}
