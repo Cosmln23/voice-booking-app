@@ -195,7 +195,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 lg:px-3 lg:py-1 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-background rounded-2xl border border-border">
               <Activity className="w-4 h-4 text-secondary animate-pulse" />
               <span className="text-sm text-primary">Activ</span>
@@ -219,7 +219,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={clsx(
-                'flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3 py-3 lg:py-3 md:py-2 sm:py-2 border-b-2 transition-colors text-sm',
+                'flex items-center gap-3 py-3 lg:py-3 md:py-2 sm:py-2 border-b-2 transition-colors text-sm',
                 activeTab === tab.key
                   ? 'border-secondary text-primary'
                   : 'border-transparent text-secondary hover:text-primary'
@@ -238,7 +238,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
           <div className="space-y-6">
             {/* Integration Status */}
             <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
-              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-3">
                 <Settings className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Status Integrări
               </h3>
@@ -279,7 +279,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               
               <HorizontalScroller>
                 <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
-                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                  <div className="flex items-center gap-3">
                     <Brain className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
                       <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">OpenAI</div>
@@ -290,7 +290,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 </div>
 
                 <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
-                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                  <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
                       <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">Google Calendar</div>
@@ -301,7 +301,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                 </div>
 
                 <div className="flex items-center justify-between p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-card rounded-2xl min-w-[200px] snap-start shrink-0">
-                  <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3">
+                  <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                     <div>
                       <div className="font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm">Telefonie</div>
@@ -345,7 +345,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
 
             <HorizontalScroller>
               <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
-                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2">
                   <Phone className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Total Apeluri</span>
                 </div>
@@ -354,7 +354,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               </div>
 
               <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
-                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2">
                   <CheckCircle className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Rata de Succes</span>
                 </div>
@@ -363,7 +363,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
               </div>
 
               <div className="bg-background rounded-2xl p-3 lg:p-3 md:px-3 md:py-2 sm:px-3 sm:py-2 border border-border min-w-[200px] snap-start shrink-0">
-                <div className="flex items-center gap-3 lg:gap-3 md:gap-3 sm:gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2">
                   <Clock className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4 text-secondary" />
                   <span className="text-xs text-secondary">Timp Economisit</span>
                 </div>
@@ -374,7 +374,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
 
             {/* Costs and Efficiency */}
             <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
-              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-3">
                 <DollarSign className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Costuri și Eficiență
               </h3>
@@ -406,7 +406,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
           <div className="space-y-6 lg:space-y-6 md:space-y-3 sm:space-y-3">
             {/* Voice Configuration */}
             <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
-              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-3">
                 <Volume2 className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Configurare Voce
               </h3>
@@ -415,7 +415,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
                   <label className="block text-sm lg:text-sm md:text-sm sm:text-sm font-medium lg:font-medium md:font-semibold sm:font-semibold text-primary mb-2">
                     Gen Voce
                   </label>
-                  <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => setVoiceGender('female')}
                       className={clsx(
@@ -460,7 +460,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
 
             {/* Greeting Message */}
             <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
-              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-4 flex items-center gap-3">
                 <MessageSquare className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Mesaj de Întâmpinare
               </h3>
@@ -539,7 +539,7 @@ export default function AgentControlCenter({ isMobile, onMobileToggle }: AgentCo
           <div className="space-y-6 lg:space-y-6 md:space-y-3 sm:space-y-3">
             {/* Dictionary Header */}
             <div className="bg-background rounded-2xl p-4 lg:p-4 md:p-3 sm:p-3 border border-border">
-              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-2 flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+              <h3 className="font-semibold lg:font-semibold md:font-semibold sm:font-semibold text-primary lg:text-primary md:text-sm sm:text-sm mb-2 flex items-center gap-3">
                 <Brain className="w-5 h-5 lg:w-5 lg:h-5 md:w-4 md:h-4 sm:w-4 sm:h-4" />
                 Dicționar și Sinonime AI
               </h3>

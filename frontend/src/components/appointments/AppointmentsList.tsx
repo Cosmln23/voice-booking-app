@@ -327,7 +327,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
       {/* Main Header */}
       <div className="px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 border-b border-border bg-card">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+          <div className="flex items-center gap-3">
             {isMobile && (
               <button 
                 onClick={onMobileToggle}
@@ -339,7 +339,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
             <LayoutDashboard className="w-4 h-4 lg:w-4 lg:h-4 md:w-4 md:h-4 sm:w-4 sm:h-4 text-primary" />
             <h1 className="text-3xl lg:text-3xl md:text-sm sm:text-sm font-bold lg:font-bold md:font-semibold sm:font-semibold text-primary">Tablou de Bord</h1>
           </div>
-          <div className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+          <div className="flex items-center gap-3">
             <p className="text-sm lg:text-sm md:text-sm sm:text-sm text-secondary">Astăzi, 12 Oct 2025</p>
             <button className="p-1.5 text-secondary hover:text-primary rounded-2xl hover:bg-card-hover transition-colors relative">
               <Bell className="h-4 w-4" />
@@ -352,7 +352,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
       {/* Compact Status Bar */}
       <div className="px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 border-b border-border bg-card">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between text-sm lg:text-sm md:text-sm sm:text-sm gap-2 lg:gap-0">
-          <div className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+          <div className="flex items-center gap-3">
             <Mic className="w-4 h-4 text-primary" />
             <span className="text-secondary">Agent Vocal</span>
             <div className="flex items-center gap-1">
@@ -381,15 +381,15 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
       
       {/* Quick Actions */}
       <div className="px-4 py-2 lg:px-4 lg:py-2 md:px-3 md:py-2 sm:px-3 sm:py-2 border-b border-border bg-card">
-        <div className="flex gap-2 lg:gap-2 md:gap-3 sm:gap-3">
+        <div className="flex gap-3">
           <button 
             onClick={() => setShowAddAppointment(true)}
-            className="flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3 px-3 py-1.5 lg:px-3 lg:py-1.5 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-primary text-background rounded-2xl hover:bg-secondary transition-colors text-sm"
+            className="flex items-center gap-3 px-3 py-1.5 lg:px-3 lg:py-1.5 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-primary text-background rounded-2xl hover:bg-secondary transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
             <span className="lg:inline md:text-sm sm:text-sm">Adaugă Programare</span>
           </button>
-          <button className="hidden lg:flex md:flex items-center gap-2 lg:gap-2 md:gap-3 sm:gap-3 px-3 py-1.5 lg:px-3 lg:py-1.5 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-secondary/10 text-secondary hover:text-primary hover:bg-secondary/20 rounded-2xl transition-colors text-sm lg:text-sm md:text-sm sm:text-sm">
+          <button className="hidden lg:flex md:flex items-center gap-3 px-3 py-1.5 lg:px-3 lg:py-1.5 md:px-3 md:py-2 sm:px-3 sm:py-2 bg-secondary/10 text-secondary hover:text-primary hover:bg-secondary/20 rounded-2xl transition-colors text-sm lg:text-sm md:text-sm sm:text-sm">
             <Ban className="w-4 h-4" />
             <span className="lg:inline md:text-sm sm:text-sm">Blochează Interval</span>
           </button>

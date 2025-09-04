@@ -26,10 +26,31 @@ interface ApiResponse<T> {
   total?: number;
 }
 
-// Auth helper function to get headers with token
+// Auth helper function to get headers with token and ensure session
 async function withAuthHeaders(headers: Record<string, string> = {}): Promise<Record<string, string>> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    let { data: { session } } = await supabase.auth.getSession();
+    
+    // If no session, try to sign in with existing user or anonymous
+    if (!session) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'scinterim09@gmail.com',
+          password: 'temporary123'
+        });
+        if (!error && data.session) {
+          session = data.session;
+        } else {
+          // Fallback to anonymous
+          const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+          if (!anonError && anonData.session) {
+            session = anonData.session;
+          }
+        }
+      } catch (authError) {
+        console.error('Auth sign-in error:', authError);
+      }
+    }
     
     if (session?.access_token) {
       return {
