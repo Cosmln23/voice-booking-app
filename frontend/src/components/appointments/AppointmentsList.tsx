@@ -7,6 +7,7 @@ import { Search, Filter, Bell, ChevronLeft, ChevronRight, Mic, Activity, Calenda
 
 import Badge from '../ui/Badge'
 import { useAppointments } from '../../hooks'
+import { supabase } from '../../lib/api'
 import type { Appointment, AppointmentStatus, AppointmentType, AppointmentPriority } from '../../types'
 
 // Extended appointment interface with client details for compatibility  
@@ -180,6 +181,7 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
   })
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | ''>('')
+  const [hasSession, setHasSession] = useState(false)
 
   // Use real API data
   const { 
@@ -242,15 +244,32 @@ export default function AppointmentsList({ selectedAppointment, onSelectAppointm
     }
   }
 
-  // Fetch appointments on component mount and when filters change
+  // Check session on mount
   useEffect(() => {
-    fetchAppointments({
-      // Remove automatic date filtering to show all appointments
-      status: statusFilter || undefined,
-      limit: 50,
-      offset: 0
-    })
-  }, [fetchAppointments, statusFilter])
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch appointments only if session exists
+  useEffect(() => {
+    if (hasSession) {
+      fetchAppointments({
+        status: statusFilter || undefined,
+        limit: 50,
+        offset: 0
+      });
+    }
+  }, [fetchAppointments, statusFilter, hasSession])
 
   // Convert API appointments to component format for compatibility
   const convertedAppointments: AppointmentWithDetails[] = appointments.map(apt => ({

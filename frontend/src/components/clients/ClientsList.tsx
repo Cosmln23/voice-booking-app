@@ -25,6 +25,7 @@ import {
 import ClientProfile from './ClientProfile'
 import AddClientModal from './AddClientModal'
 import { useClients } from '../../hooks'
+import { supabase } from '../../lib/api'
 import type { Client as ApiClient, ClientStatus } from '../../types'
 import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
@@ -128,6 +129,7 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
   const [showAddClient, setShowAddClient] = useState(false)
   const [sortBy, setSortBy] = useState<'name' | 'lastVisit' | 'totalVisits' | 'ltv'>('lastVisit')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [hasSession, setHasSession] = useState(false)
 
   // Use real API data
   const { 
@@ -141,11 +143,29 @@ export default function ClientsList({ isMobile, onMobileToggle }: ClientsListPro
     createClient
   } = useClients()
 
-  // Fetch clients on component mount
+  // Check session on mount
   useEffect(() => {
-    fetchClients({ limit: 50, offset: 0 })
-    fetchStats()
-  }, [fetchClients, fetchStats])
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch clients only if session exists
+  useEffect(() => {
+    if (hasSession) {
+      fetchClients({ limit: 50, offset: 0 });
+      fetchStats();
+    }
+  }, [fetchClients, fetchStats, hasSession])
 
   // Convert API clients to component format for compatibility
   const convertApiClients = (clients: ApiClient[]): Client[] => {

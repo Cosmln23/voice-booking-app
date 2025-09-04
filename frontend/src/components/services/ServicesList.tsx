@@ -26,6 +26,7 @@ import {
 import ServiceProfile from './ServiceProfile'
 import AddServiceModal from './AddServiceModal'
 import { useServices } from '../../hooks'
+import { supabase } from '../../lib/api'
 import type { Service, ServiceStatus, ServiceCategory } from '../../types'
 import ResponsiveTable, { ResponsiveTableRow, ResponsiveTableCell } from '../ui/ResponsiveTable'
 
@@ -49,6 +50,7 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
   const [showDropdownForService, setShowDropdownForService] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'duration' | 'price'>('category')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [hasSession, setHasSession] = useState(false)
 
   // Use real API data
   const {
@@ -62,10 +64,28 @@ export default function ServicesList({ isMobile, onMobileToggle }: ServicesListP
     deleteService
   } = useServices()
 
-  // Fetch services on component mount
+  // Check session on mount
   useEffect(() => {
-    fetchServices({ limit: 50, offset: 0 })
-  }, [fetchServices])
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch services only if session exists
+  useEffect(() => {
+    if (hasSession) {
+      fetchServices({ limit: 50, offset: 0 });
+    }
+  }, [fetchServices, hasSession])
 
   // Close dropdown when clicking outside
   useEffect(() => {
