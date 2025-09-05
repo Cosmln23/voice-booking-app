@@ -3,8 +3,8 @@
  * Handles agent status, configuration, and operations
  */
 
-import { useState, useCallback } from 'react';
-import { api } from '../lib/api';
+import { useState, useCallback, useEffect } from 'react';
+import { api, supabase } from '../lib/api';
 import type { 
   AgentStatusInfo, 
   AgentConfiguration,
@@ -16,8 +16,32 @@ export const useAgent = (): UseAgentReturn => {
   const [config, setConfig] = useState<AgentConfiguration | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [hasSession, setHasSession] = useState(false);
+
+  // Check for session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchStatus = useCallback(async () => {
+    // Don't fetch if no session
+    if (!hasSession) {
+      setStatus(undefined);
+      setError('No session available');
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
 
@@ -36,7 +60,7 @@ export const useAgent = (): UseAgentReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [hasSession]);
 
   const fetchConfig = useCallback(async () => {
     try {
