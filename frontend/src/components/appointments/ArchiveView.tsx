@@ -2,7 +2,7 @@
 
 import clsx from "clsx"
 import { useAppointments } from '../../hooks/useAppointments'
-import { AppointmentStatus } from '../../types/appointment'
+import { AppointmentStatus } from '../../types'
 
 import {
   Archive,
@@ -229,7 +229,6 @@ export default function ArchiveView({ isMobile, onMobileToggle }: ArchiveViewPro
               </div>
             </div>
           ))}
-        </div>
 
           {filteredAppointments.length === 0 && (
             <div className="text-center py-12">

@@ -3,7 +3,7 @@
 import clsx from "clsx"
 import { useEffect } from 'react'
 import { useAppointments } from '../../hooks/useAppointments'
-import { AppointmentStatus } from '../../types/appointment'
+import { AppointmentStatus } from '../../types'
 
 import {
   Star,
@@ -159,7 +159,6 @@ export default function UpcomingView({ isMobile, onMobileToggle }: UpcomingViewP
               </div>
             </div>
           ))}
-        </div>
 
           {upcomingAppointments.length === 0 && (
             <div className="text-center py-12">

@@ -3,7 +3,7 @@
 import clsx from "clsx"
 import { useEffect } from 'react'
 import { useAppointments } from '../../hooks/useAppointments'
-import { AppointmentStatus, AppointmentPriority } from '../../types/appointment'
+import { AppointmentStatus, AppointmentPriority } from '../../types'
 
 import {
   Clock,
@@ -180,7 +180,6 @@ export default function PendingView({ isMobile, onMobileToggle }: PendingViewPro
               </div>
             </div>
           ))}
-        </div>
 
           {pendingAppointments.length === 0 && (
             <div className="text-center py-12">
