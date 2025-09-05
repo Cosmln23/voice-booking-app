@@ -1,6 +1,9 @@
 'use client'
 
 import clsx from "clsx"
+import { useEffect } from 'react'
+import { useAppointments } from '../../hooks/useAppointments'
+import { AppointmentStatus } from '../../types/appointment'
 
 import {
   Calendar,
@@ -18,44 +21,24 @@ interface TodayViewProps {
 }
 
 export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) {
-  const todayAppointments = [
-    {
-      id: '1',
-      time: '09:00',
-      client: 'Alexandru Popescu',
-      phone: '+40 721 ***123',
-      service: 'Tunsoare Clasică',
-      status: 'confirmed',
-      duration: '45min'
-    },
-    {
-      id: '2',
-      time: '10:00',
-      client: 'Maria Ionescu',
-      phone: '+40 722 ***456',
-      service: 'Tunsoare + Styling',
-      status: 'in-progress',
-      duration: '60min'
-    },
-    {
-      id: '3',
-      time: '11:30',
-      client: 'Ion Radu',
-      phone: '+40 723 ***789',
-      service: 'Barbă Completă',
-      status: 'confirmed',
-      duration: '40min'
-    },
-    {
-      id: '4',
-      time: '14:00',
-      client: 'Ana Gheorghe',
-      phone: '+40 724 ***012',
-      service: 'Pachet Tuns + Barbă',
-      status: 'confirmed',
-      duration: '65min'
-    }
-  ]
+  const { appointments, isLoading, error, fetchAppointments } = useAppointments()
+  
+  // Fetch appointments on mount
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+  
+  // Filter appointments for today
+  const today = new Date().toISOString().split('T')[0]
+  const todayAppointments = appointments.filter(apt => apt.date === today).map(apt => ({
+    id: apt.id,
+    time: apt.time,
+    client: apt.client_name,
+    phone: apt.phone,
+    service: apt.service,
+    status: apt.status,
+    duration: apt.duration
+  }))
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -111,6 +94,18 @@ export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) 
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-secondary border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-secondary">Se încarcă programările...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Calendar className="w-12 h-12 text-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-primary mb-2">Eroare la încărcarea datelor</h3>
+            <p className="text-secondary">{error}</p>
+          </div>
+        ) : (
         <div className="space-y-4">
           {todayAppointments.map((appointment) => (
             <div key={appointment.id} className="bg-background rounded-2xl p-4 border border-border hover:bg-card-hover transition-colors">
@@ -147,12 +142,14 @@ export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) 
           ))}
         </div>
 
-        {todayAppointments.length === 0 && (
-          <div className="text-center py-12">
-            <Calendar className="w-12 h-12 text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-primary mb-2">Nu există programări pentru astăzi</h3>
-            <p className="text-secondary">Ziua liberă!</p>
-          </div>
+          {todayAppointments.length === 0 && (
+            <div className="text-center py-12">
+              <Calendar className="w-12 h-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-primary mb-2">Nu există programări pentru astăzi</h3>
+              <p className="text-secondary">Ziua liberă!</p>
+            </div>
+          )}
+        </div>
         )}
       </div>
     </div>

@@ -1,6 +1,9 @@
 'use client'
 
 import clsx from "clsx"
+import { useEffect } from 'react'
+import { useAppointments } from '../../hooks/useAppointments'
+import { AppointmentStatus, AppointmentPriority } from '../../types/appointment'
 
 import {
   Clock,
@@ -19,38 +22,26 @@ interface PendingViewProps {
 }
 
 export default function PendingView({ isMobile, onMobileToggle }: PendingViewProps) {
-  const pendingAppointments = [
-    {
-      id: '1',
-      date: '2025-02-02',
-      time: '15:00',
-      client: 'Marius Constantinescu',
-      phone: '+40 730 ***123',
-      service: 'Tunsoare Clasică',
-      requestedAt: '2025-01-31 14:20',
-      priority: 'normal'
-    },
-    {
-      id: '2',
-      date: '2025-02-03',
-      time: '11:30',
-      client: 'Andreea Popescu',
-      phone: '+40 731 ***456',
-      service: 'Tratament + Coafură',
-      requestedAt: '2025-01-31 10:15',
-      priority: 'high'
-    },
-    {
-      id: '3',
-      date: '2025-02-01',
-      time: '16:45',
-      client: 'Gabriel Mihai',
-      phone: '+40 732 ***789',
-      service: 'Barbă + Mustață',
-      requestedAt: '2025-01-30 18:30',
-      priority: 'urgent'
-    }
-  ]
+  const { appointments, isLoading, error, fetchAppointments } = useAppointments()
+  
+  // Fetch appointments on mount
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+  
+  // Filter appointments with status 'pending'
+  const pendingAppointments = appointments
+    .filter(apt => apt.status === 'pending')
+    .map(apt => ({
+      id: apt.id,
+      date: apt.date,
+      time: apt.time,
+      client: apt.client_name,
+      phone: apt.phone,
+      service: apt.service,
+      requestedAt: apt.created_at,
+      priority: apt.priority
+    }))
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
@@ -130,6 +121,18 @@ export default function PendingView({ isMobile, onMobileToggle }: PendingViewPro
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-secondary border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-secondary">Se încarcă programările...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Clock className="w-12 h-12 text-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-primary mb-2">Eroare la încărcarea datelor</h3>
+            <p className="text-secondary">{error}</p>
+          </div>
+        ) : (
         <div className="space-y-4">
           {sortedAppointments.map((appointment) => (
             <div key={appointment.id} className="bg-background rounded-2xl p-4 border border-border hover:bg-card-hover transition-colors">
@@ -179,12 +182,14 @@ export default function PendingView({ isMobile, onMobileToggle }: PendingViewPro
           ))}
         </div>
 
-        {pendingAppointments.length === 0 && (
-          <div className="text-center py-12">
-            <Clock className="w-12 h-12 text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-primary mb-2">Nu există programări în așteptare</h3>
-            <p className="text-secondary">Toate programările au fost procesate.</p>
-          </div>
+          {pendingAppointments.length === 0 && (
+            <div className="text-center py-12">
+              <Clock className="w-12 h-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-primary mb-2">Nu există programări în așteptare</h3>
+              <p className="text-secondary">Toate programările au fost procesate.</p>
+            </div>
+          )}
+        </div>
         )}
       </div>
     </div>

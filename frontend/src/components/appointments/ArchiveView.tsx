@@ -1,6 +1,8 @@
 'use client'
 
 import clsx from "clsx"
+import { useAppointments } from '../../hooks/useAppointments'
+import { AppointmentStatus } from '../../types/appointment'
 
 import {
   Archive,
@@ -13,7 +15,7 @@ import {
   Menu
 } from 'lucide-react'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import HorizontalScroller from '../ui/HorizontalScroller'
 
 interface ArchiveViewProps {
@@ -24,69 +26,28 @@ interface ArchiveViewProps {
 export default function ArchiveView({ isMobile, onMobileToggle }: ArchiveViewProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const { appointments, isLoading, error, fetchAppointments } = useAppointments()
 
-  const archivedAppointments = [
-    {
-      id: '1',
-      date: '2025-01-30',
-      time: '14:00',
-      client: 'Victor Petrescu',
-      phone: '+40 733 ***123',
-      service: 'Tunsoare + Styling',
-      status: 'completed',
-      price: '65 RON'
-    },
-    {
-      id: '2',
-      date: '2025-01-29',
-      time: '11:30',
-      client: 'Mihaela Ionescu',
-      phone: '+40 734 ***456',
-      service: 'Tratament Păr',
-      status: 'completed',
-      price: '85 RON'
-    },
-    {
-      id: '3',
-      date: '2025-01-29',
-      time: '16:00',
-      client: 'Radu Popescu',
-      phone: '+40 735 ***789',
-      service: 'Barbă Completă',
-      status: 'cancelled',
-      price: '0 RON'
-    },
-    {
-      id: '4',
-      date: '2025-01-28',
-      time: '10:15',
-      client: 'Cristina Mihai',
-      phone: '+40 736 ***012',
-      service: 'Pachet Premium',
-      status: 'no-show',
-      price: '0 RON'
-    },
-    {
-      id: '5',
-      date: '2025-01-27',
-      time: '15:45',
-      client: 'Bogdan Radu',
-      phone: '+40 737 ***345',
-      service: 'Tunsoare Clasică',
-      status: 'completed',
-      price: '45 RON'
-    },
-    {
-      id: '6',
-      date: '2025-01-26',
-      time: '13:20',
-      client: 'Elena Constantinescu',
-      phone: '+40 738 ***678',
-      service: 'Coafură Eveniment',
-      status: 'completed',
-      price: '120 RON'
-    }
-  ]
+  // Fetch appointments on mount
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+
+  // Filter appointments for archived (past dates with completed/cancelled/no-show status)
+  const today = new Date().toISOString().split('T')[0]
+  const archivedAppointments = appointments
+    .filter(apt => apt.date < today && ['completed', 'cancelled', 'no-show'].includes(apt.status))
+    .map(apt => ({
+      id: apt.id,
+      date: apt.date,
+      time: apt.time,
+      client: apt.client_name,
+      phone: apt.phone,
+      service: apt.service,
+      status: apt.status,
+      price: apt.price || '0 RON'
+    }))
+    .sort((a, b) => b.date.localeCompare(a.date))
 
   const filteredAppointments = archivedAppointments.filter(appointment => {
     const matchesSearch = appointment.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -217,6 +178,18 @@ export default function ArchiveView({ isMobile, onMobileToggle }: ArchiveViewPro
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-secondary border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-secondary">Se încarcă arhiva...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Archive className="w-12 h-12 text-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-primary mb-2">Eroare la încărcarea datelor</h3>
+            <p className="text-secondary">{error}</p>
+          </div>
+        ) : (
         <div className="space-y-4">
           {filteredAppointments.map((appointment) => (
             <div key={appointment.id} className="bg-background rounded-2xl p-4 border border-border hover:bg-card-hover transition-colors">
@@ -258,12 +231,14 @@ export default function ArchiveView({ isMobile, onMobileToggle }: ArchiveViewPro
           ))}
         </div>
 
-        {filteredAppointments.length === 0 && (
-          <div className="text-center py-12">
-            <Archive className="w-12 h-12 text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-primary mb-2">Nu s-au găsit rezultate</h3>
-            <p className="text-secondary">Încearcă să modifici criteriile de căutare.</p>
-          </div>
+          {filteredAppointments.length === 0 && (
+            <div className="text-center py-12">
+              <Archive className="w-12 h-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-primary mb-2">Nu s-au găsit rezultate</h3>
+              <p className="text-secondary">Încearcă să modifici criteriile de căutare.</p>
+            </div>
+          )}
+        </div>
         )}
       </div>
     </div>

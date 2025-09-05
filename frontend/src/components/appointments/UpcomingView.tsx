@@ -1,5 +1,9 @@
-import clsx from "clsx"
 'use client'
+
+import clsx from "clsx"
+import { useEffect } from 'react'
+import { useAppointments } from '../../hooks/useAppointments'
+import { AppointmentStatus } from '../../types/appointment'
 
 import {
   Star,
@@ -17,58 +21,34 @@ interface UpcomingViewProps {
 }
 
 export default function UpcomingView({ isMobile, onMobileToggle }: UpcomingViewProps) {
-  const upcomingAppointments = [
-    {
-      id: '1',
-      date: '2025-02-01',
-      time: '10:00',
-      client: 'Bogdan Mihai',
-      phone: '+40 725 ***345',
-      service: 'Tunsoare + Styling',
-      status: 'confirmed',
-      daysUntil: 1
-    },
-    {
-      id: '2',
-      date: '2025-02-01',
-      time: '14:30',
-      client: 'Cristina Popescu',
-      phone: '+40 726 ***678',
-      service: 'Tratament Păr',
-      status: 'confirmed',
-      daysUntil: 1
-    },
-    {
-      id: '3',
-      date: '2025-02-03',
-      time: '09:15',
-      client: 'Daniel Ionescu',
-      phone: '+40 727 ***901',
-      service: 'Barbă Completă',
-      status: 'confirmed',
-      daysUntil: 3
-    },
-    {
-      id: '4',
-      date: '2025-02-05',
-      time: '11:00',
-      client: 'Elena Radu',
-      phone: '+40 728 ***234',
-      service: 'Pachet Premium',
-      status: 'confirmed',
-      daysUntil: 5
-    },
-    {
-      id: '5',
-      date: '2025-02-07',
-      time: '16:00',
-      client: 'Florin Georgescu',
-      phone: '+40 729 ***567',
-      service: 'Tunsoare Clasică',
-      status: 'confirmed',
-      daysUntil: 7
-    }
-  ]
+  const { appointments, isLoading, error, fetchAppointments } = useAppointments()
+  
+  // Fetch appointments on mount
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+  
+  // Filter appointments for upcoming dates (after today)
+  const today = new Date().toISOString().split('T')[0]
+  const upcomingAppointments = appointments
+    .filter(apt => apt.date > today)
+    .map(apt => {
+      const appointmentDate = new Date(apt.date)
+      const todayDate = new Date(today)
+      const daysUntil = Math.ceil((appointmentDate.getTime() - todayDate.getTime()) / (1000 * 3600 * 24))
+      
+      return {
+        id: apt.id,
+        date: apt.date,
+        time: apt.time,
+        client: apt.client_name,
+        phone: apt.phone,
+        service: apt.service,
+        status: apt.status,
+        daysUntil
+      }
+    })
+    .sort((a, b) => a.date.localeCompare(b.date))
 
   const groupedAppointments = upcomingAppointments.reduce((groups, appointment) => {
     const key = appointment.date
@@ -121,6 +101,18 @@ export default function UpcomingView({ isMobile, onMobileToggle }: UpcomingViewP
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-2 border-secondary border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-secondary">Se încarcă programările...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Star className="w-12 h-12 text-secondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-primary mb-2">Eroare la încărcarea datelor</h3>
+            <p className="text-secondary">{error}</p>
+          </div>
+        ) : (
         <div className="space-y-6">
           {Object.entries(groupedAppointments).map(([date, appointments]) => (
             <div key={date}>
@@ -169,12 +161,14 @@ export default function UpcomingView({ isMobile, onMobileToggle }: UpcomingViewP
           ))}
         </div>
 
-        {upcomingAppointments.length === 0 && (
-          <div className="text-center py-12">
-            <Star className="w-12 h-12 text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-primary mb-2">Nu există programări viitoare</h3>
-            <p className="text-secondary">Toate programările sunt pentru astăzi sau în trecut.</p>
-          </div>
+          {upcomingAppointments.length === 0 && (
+            <div className="text-center py-12">
+              <Star className="w-12 h-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-primary mb-2">Nu există programări viitoare</h3>
+              <p className="text-secondary">Toate programările sunt pentru astăzi sau în trecut.</p>
+            </div>
+          )}
+        </div>
         )}
       </div>
     </div>
