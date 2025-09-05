@@ -4,7 +4,7 @@ Comprehensive testing for all Romanian language processing modules
 """
 
 import pytest
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from typing import Dict, Any
 
 # Import processing modules
