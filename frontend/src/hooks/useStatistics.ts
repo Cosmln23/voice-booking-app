@@ -3,8 +3,8 @@
  * Handles dashboard stats and charts
  */
 
-import { useState, useCallback } from 'react';
-import { api } from '../lib/api';
+import { useState, useCallback, useEffect } from 'react';
+import { api, supabase } from '../lib/api';
 import type { 
   DashboardStats, 
   ChartData, 
@@ -17,8 +17,32 @@ export const useStatistics = (): UseStatisticsReturn => {
   const [charts, setCharts] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
+  const [hasSession, setHasSession] = useState(false);
+
+  // Check for session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setHasSession(!!session);
+    };
+    checkSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchStatistics = useCallback(async (period: StatsPeriod = 'today') => {
+    // Don't fetch if no session
+    if (!hasSession) {
+      setStatistics(undefined);
+      setError('No session available');
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
 
@@ -40,9 +64,16 @@ export const useStatistics = (): UseStatisticsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [hasSession]);
 
   const fetchCharts = useCallback(async (period: StatsPeriod = 'week') => {
+    // Don't fetch if no session
+    if (!hasSession) {
+      setCharts([]);
+      setError('No session available');
+      return;
+    }
+
     setIsLoading(true);
     setError(undefined);
 
@@ -64,7 +95,7 @@ export const useStatistics = (): UseStatisticsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [hasSession]);
 
   return {
     statistics,

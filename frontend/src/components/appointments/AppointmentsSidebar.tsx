@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import clsx from "clsx"
 import { supabase } from '@/lib/api'
 import { useRouter } from 'next/navigation'
+import { useAppointments } from '../../hooks/useAppointments'
 
 import { 
   Calendar,
@@ -25,12 +26,6 @@ import Image from 'next/image'
 
 type PageType = 'dashboard' | 'today' | 'upcoming' | 'pending' | 'archive' | 'clients' | 'services' | 'statistics' | 'agent' | 'settings'
 
-const navigation = [
-  { name: 'Astăzi', page: 'today' as PageType, icon: Calendar, count: 4 },
-  { name: 'Următoarele', page: 'upcoming' as PageType, icon: Star },
-  { name: 'În așteptare', page: 'pending' as PageType, icon: Clock, count: 3 },
-  { name: 'Arhivă', page: 'archive' as PageType, icon: Archive },
-]
 
 const adminNavigation = [
   { name: 'Dashboard', page: 'dashboard' as PageType, icon: LayoutDashboard },
@@ -53,6 +48,27 @@ export default function AppointmentsSidebar({ isMobile, onMobileToggle, currentP
   const [userInfo, setUserInfo] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const { appointments, fetchAppointments } = useAppointments()
+  
+  // Fetch appointments when user is logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchAppointments()
+    }
+  }, [isLoggedIn, fetchAppointments])
+  
+  // Calculate dynamic counts from API data
+  const today = new Date().toISOString().split('T')[0]
+  const todayCount = appointments.filter(apt => apt.date === today).length
+  const upcomingCount = appointments.filter(apt => apt.date > today).length
+  const pendingCount = appointments.filter(apt => apt.status === 'pending').length
+  
+  const navigation = [
+    { name: 'Astăzi', page: 'today' as PageType, icon: Calendar, count: todayCount > 0 ? todayCount : undefined },
+    { name: 'Următoarele', page: 'upcoming' as PageType, icon: Star, count: upcomingCount > 0 ? upcomingCount : undefined },
+    { name: 'În așteptare', page: 'pending' as PageType, icon: Clock, count: pendingCount > 0 ? pendingCount : undefined },
+    { name: 'Arhivă', page: 'archive' as PageType, icon: Archive },
+  ]
 
   useEffect(() => {
     const getSession = async () => {

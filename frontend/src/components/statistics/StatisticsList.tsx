@@ -2,7 +2,8 @@
 
 import clsx from "clsx"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useStatistics } from '../../hooks/useStatistics'
 import {
   TrendingUp,
   Calendar,
@@ -31,8 +32,15 @@ export default function StatisticsList({ isMobile, onMobileToggle }: StatisticsL
   const [selectedInterval, setSelectedInterval] = useState<TimeInterval>('month')
   const [customDateFrom, setCustomDateFrom] = useState('')
   const [customDateTo, setCustomDateTo] = useState('')
+  const { statistics, charts, isLoading, error, fetchStatistics, fetchCharts } = useStatistics()
 
-  // Mock data for analytics
+  // Fetch data on mount and when interval changes
+  useEffect(() => {
+    fetchStatistics(selectedInterval === 'custom' ? 'month' : selectedInterval)
+    fetchCharts(selectedInterval === 'custom' ? 'week' : selectedInterval)
+  }, [selectedInterval, fetchStatistics, fetchCharts])
+
+  // Fallback data when no API data is available
   const mockFinancialData = {
     revenue: [
       { date: '2024-12-01', value: 2450 },
