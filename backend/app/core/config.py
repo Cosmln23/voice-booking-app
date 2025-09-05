@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     # OpenAI configuration
     openai_api_key: Optional[str] = None
     openai_realtime_model: str = "gpt-4o-realtime-preview"
+    openai_realtime_url: str = "wss://api.openai.com/v1/realtime"
+    openai_voice: str = "alloy"
+    
+    # Twilio configuration
+    twilio_account_sid: Optional[str] = None
+    twilio_auth_token: Optional[str] = None
+    twilio_phone_number: Optional[str] = None
     
     # Google Calendar configuration  
     google_calendar_credentials_b64: Optional[str] = None

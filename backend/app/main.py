@@ -9,7 +9,7 @@ from app.core.logging import setup_logging, get_logger
 from app.core.cors import get_cors_config, log_cors_config
 from app.core.bootstrap import make_supabase_clients, test_supabase_connection
 from app.api import appointments, clients, services, statistics, agent, business_settings
-from app.api.endpoints import voice
+from app.api.endpoints import voice, twilio_voice
 from app.websockets.endpoints import router as websocket_router
 
 # Setup logging
@@ -214,6 +214,7 @@ app.include_router(statistics.router, prefix="/api", tags=["statistics"])
 app.include_router(agent.router, prefix="/api", tags=["agent"])
 app.include_router(business_settings.router, prefix="/api", tags=["settings"])
 app.include_router(voice.router, prefix="/api/voice", tags=["voice"])
+app.include_router(twilio_voice.router, prefix="/api", tags=["twilio"])
 
 # Include WebSocket router
 app.include_router(websocket_router, prefix="", tags=["websockets"])
