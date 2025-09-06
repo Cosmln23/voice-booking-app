@@ -281,7 +281,7 @@ export default function CalendarSetupModal({ isOpen, onClose, onSuccess, existin
                     <li>Creează un Service Account</li>
                     <li>Generează și descarcă cheia JSON</li>
                     <li>Partajează calendarul cu email-ul service account-ului</li>
-                    <li>Acordă permisiunea "Make changes to events"</li>
+                    <li>Acordă permisiunea &quot;Make changes to events&quot;</li>
                   </ol>
                 </div>
               )}
