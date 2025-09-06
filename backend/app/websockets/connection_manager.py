@@ -30,8 +30,11 @@ class ConnectionManager:
         
         # Admin connections (for dashboard updates)
         self.admin_connections: Set[str] = set()
+        
+        # Mobile connections (for mobile app)
+        self.mobile_connections: Set[str] = set()
     
-    async def connect(self, websocket: WebSocket, connection_type: str = "client") -> str:
+    async def connect(self, websocket: WebSocket, connection_type: str = "client", extra_data: dict = None) -> str:
         """Accept WebSocket connection and assign connection ID"""
         await websocket.accept()
         
@@ -39,17 +42,25 @@ class ConnectionManager:
         self.active_connections[connection_id] = websocket
         
         # Store connection metadata
-        self.connection_metadata[connection_id] = {
+        metadata = {
             "type": connection_type,
             "connected_at": datetime.now().isoformat(),
             "last_activity": datetime.now().isoformat()
         }
+        
+        # Add extra data if provided
+        if extra_data:
+            metadata.update(extra_data)
+            
+        self.connection_metadata[connection_id] = metadata
         
         # Add to specific connection sets based on type
         if connection_type == "agent":
             self.agent_connections.add(connection_id)
         elif connection_type == "admin":
             self.admin_connections.add(connection_id)
+        elif connection_type == "mobile":
+            self.mobile_connections.add(connection_id)
         
         logger.info(f"WebSocket connection established: {connection_id} ({connection_type})")
         
@@ -73,6 +84,7 @@ class ConnectionManager:
         # Remove from specific sets
         self.agent_connections.discard(connection_id)
         self.admin_connections.discard(connection_id)
+        self.mobile_connections.discard(connection_id)
         
         logger.info(f"WebSocket connection closed: {connection_id}")
     
@@ -153,7 +165,8 @@ class ConnectionManager:
             "total_connections": len(self.active_connections),
             "admin_connections": len(self.admin_connections),
             "agent_connections": len(self.agent_connections),
-            "client_connections": len(self.active_connections) - len(self.admin_connections) - len(self.agent_connections),
+            "mobile_connections": len(self.mobile_connections),
+            "client_connections": len(self.active_connections) - len(self.admin_connections) - len(self.agent_connections) - len(self.mobile_connections),
             "connections": [
                 {
                     "id": conn_id,
