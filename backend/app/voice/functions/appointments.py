@@ -22,6 +22,7 @@ from app.voice.processing import (
     normalize_name_from_voice, normalize_phone_from_voice, 
     map_service_from_voice, parse_datetime_from_voice
 )
+from app.services.calendar_service import create_appointment_calendar_event
 
 logger = get_logger(__name__)
 
@@ -156,6 +157,34 @@ async def create_voice_appointment(
         
         # Create the appointment
         created_appointment = await appointment_crud.create_appointment(appointment_data)
+        
+        # CRITICAL: Create Google Calendar event
+        calendar_event_id = None
+        try:
+            appointment_dict = {
+                "id": str(created_appointment.id),
+                "date": created_appointment.date,
+                "time": created_appointment.time,
+                "service": created_appointment.service,
+                "duration": duration_minutes,
+                "phone": created_appointment.phone,
+                "notes": created_appointment.notes
+            }
+            
+            calendar_event_id = await create_appointment_calendar_event(
+                appointment_dict, 
+                normalized_name
+            )
+            
+            if calendar_event_id:
+                logger.info(f"Calendar event {calendar_event_id} created for appointment {created_appointment.id}")
+                # TODO: Store calendar_event_id in appointment record for future updates
+            else:
+                logger.warning(f"Failed to create calendar event for appointment {created_appointment.id}")
+                
+        except Exception as e:
+            logger.error(f"Error creating calendar event: {e}")
+            # Don't fail the appointment creation if calendar fails
         
         # Generate confirmation message
         confirmation_message = _generate_confirmation_message(

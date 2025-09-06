@@ -13,6 +13,7 @@ from app.database.crud_business_settings import BusinessSettingsCRUD
 from app.models.appointment import AppointmentStatus
 from app.voice.functions.auth import get_voice_user_context
 from app.voice.functions.errors import VoiceError, handle_voice_error
+from app.services.calendar_service import check_calendar_availability
 
 logger = get_logger(__name__)
 
@@ -279,7 +280,7 @@ async def _check_specific_slot(
         offset=0
     )
     
-    # Check for time conflicts
+    # Check for time conflicts with database appointments
     requested_start = datetime.combine(date_requested, time_requested)
     requested_end = requested_start + timedelta(minutes=duration_minutes)
     
@@ -292,6 +293,16 @@ async def _check_specific_slot(
             # Check overlap
             if (requested_start < apt_end and requested_end > apt_start):
                 return False
+    
+    # CRITICAL: Check Google Calendar availability
+    calendar_available = await check_calendar_availability(
+        requested_start, 
+        duration_minutes
+    )
+    
+    if not calendar_available:
+        logger.info(f"Time slot {requested_start} blocked by Google Calendar event")
+        return False
     
     return True
 

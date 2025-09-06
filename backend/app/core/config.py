@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # Google Calendar configuration  
     google_calendar_credentials_b64: Optional[str] = None
     google_calendar_id: str = "primary"
+    google_calendar_timezone: str = "Europe/Bucharest"
+    google_calendar_enabled: bool = False
     
     # Session & dialogue configuration
     fsm_session_timeout: int = 300  # 5 minutes

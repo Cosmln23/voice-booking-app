@@ -3,22 +3,76 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+startCommand = "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1 --log-level info"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
 [environments.production]
+# Core Application Settings
+DEBUG = "false"
+ENVIRONMENT = "production"
+LOG_LEVEL = "INFO"
+
+# Supabase Configuration
 SUPABASE_URL = "${{SUPABASE_URL}}"
 SUPABASE_ANON_KEY = "${{SUPABASE_ANON_KEY}}" 
-SUPABASE_SERVICE_ROLE_KEY = "${{SUPABASE_SERVICE_ROLE_KEY}}"
+SUPABASE_SERVICE_KEY = "${{SUPABASE_SERVICE_KEY}}"
+
+# OpenAI Configuration
 OPENAI_API_KEY = "${{OPENAI_API_KEY}}"
-DEBUG = "false"
-CORS_ORIGINS = "https://voice-booking-app.vercel.app,https://*.vercel.app"
+OPENAI_REALTIME_MODEL = "gpt-4o-realtime-preview"
+OPENAI_VOICE = "nova"
+
+# Twilio Configuration for Voice Calling
+TWILIO_ACCOUNT_SID = "${{TWILIO_ACCOUNT_SID}}"
+TWILIO_AUTH_TOKEN = "${{TWILIO_AUTH_TOKEN}}"
+TWILIO_PHONE_NUMBER = "${{TWILIO_PHONE_NUMBER}}"
+
+# Google Calendar Integration
+GOOGLE_CALENDAR_ENABLED = "true"
+GOOGLE_CALENDAR_CREDENTIALS_B64 = "${{GOOGLE_CALENDAR_CREDENTIALS_B64}}"
+GOOGLE_CALENDAR_ID = "primary"
+GOOGLE_CALENDAR_TIMEZONE = "Europe/Bucharest"
+
+# CORS Configuration
+CORS_ORIGINS = "https://voice-booking-app.vercel.app,https://*.vercel.app,https://*.railway.app"
+
+# Voice System Configuration
+FSM_SESSION_TIMEOUT = "300"
+SLOT_LOCK_DURATION = "120"
 
 [environments.staging]
+# Core Application Settings
+DEBUG = "true"
+ENVIRONMENT = "staging"
+LOG_LEVEL = "DEBUG"
+
+# Supabase Configuration
 SUPABASE_URL = "${{SUPABASE_URL_STAGING}}"
 SUPABASE_ANON_KEY = "${{SUPABASE_ANON_KEY_STAGING}}"
-SUPABASE_SERVICE_ROLE_KEY = "${{SUPABASE_SERVICE_ROLE_KEY_STAGING}}"
+SUPABASE_SERVICE_KEY = "${{SUPABASE_SERVICE_KEY_STAGING}}"
+
+# OpenAI Configuration
 OPENAI_API_KEY = "${{OPENAI_API_KEY_STAGING}}"
-DEBUG = "true"
-CORS_ORIGINS = "http://localhost:3000,https://*.vercel.app"
+OPENAI_REALTIME_MODEL = "gpt-4o-realtime-preview"
+OPENAI_VOICE = "nova"
+
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = "${{TWILIO_ACCOUNT_SID_STAGING}}"
+TWILIO_AUTH_TOKEN = "${{TWILIO_AUTH_TOKEN_STAGING}}"
+TWILIO_PHONE_NUMBER = "${{TWILIO_PHONE_NUMBER_STAGING}}"
+
+# Google Calendar Integration
+GOOGLE_CALENDAR_ENABLED = "true"
+GOOGLE_CALENDAR_CREDENTIALS_B64 = "${{GOOGLE_CALENDAR_CREDENTIALS_B64_STAGING}}"
+GOOGLE_CALENDAR_ID = "primary"
+GOOGLE_CALENDAR_TIMEZONE = "Europe/Bucharest"
+
+# CORS Configuration
+CORS_ORIGINS = "http://localhost:3000,https://*.vercel.app,https://*.railway.app"
+
+# Voice System Configuration
+FSM_SESSION_TIMEOUT = "600"  # Longer timeout for testing
+SLOT_LOCK_DURATION = "240"

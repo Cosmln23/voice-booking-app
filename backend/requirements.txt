@@ -36,6 +36,12 @@ python-dotenv==1.0.0
 # Date/time utilities
 python-dateutil==2.8.2
 
+# Google Calendar integration
+google-auth>=2.23.0
+google-auth-oauthlib>=1.0.0  
+google-api-python-client>=2.100.0
+pytz>=2023.3
+
 # UUID generation (built-in Python module)
 # uuid==1.30  # Not needed - part of Python standard library
 
