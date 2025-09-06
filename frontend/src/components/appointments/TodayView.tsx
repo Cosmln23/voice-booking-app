@@ -1,9 +1,10 @@
 'use client'
 
 import clsx from "clsx"
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppointments } from '../../hooks/useAppointments'
 import { AppointmentStatus } from '../../types'
+import CalendarModal from '../calendar/CalendarModal'
 
 import {
   Calendar,
@@ -22,6 +23,7 @@ interface TodayViewProps {
 
 export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) {
   const { appointments, isLoading, error, fetchAppointments } = useAppointments()
+  const [showCalendarModal, setShowCalendarModal] = useState(false)
   
   // Fetch appointments on mount
   useEffect(() => {
@@ -77,13 +79,18 @@ export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) 
                 <Menu className="w-5 h-5" />
               </button>
             )}
-            <Calendar className="w-8 h-8 text-secondary" />
-            <div>
-              <h1 className="text-3xl font-bold text-primary">Astăzi</h1>
-              <p className="text-base text-secondary">
-                Programări pentru {new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </p>
-            </div>
+            <button 
+              onClick={() => setShowCalendarModal(true)}
+              className="flex items-center gap-3 hover:bg-card-hover rounded-2xl p-2 -m-2 transition-colors group"
+            >
+              <Calendar className="w-8 h-8 text-secondary group-hover:text-primary" />
+              <div className="text-left">
+                <h1 className="text-3xl font-bold text-primary group-hover:text-blue-600 transition-colors">Astăzi</h1>
+                <p className="text-base text-secondary">
+                  Programări pentru {new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </p>
+              </div>
+            </button>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-background rounded-2xl border border-border">
             <div className="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
@@ -151,6 +158,13 @@ export default function TodayView({ isMobile, onMobileToggle }: TodayViewProps) 
         </div>
         )}
       </div>
+
+      {/* Calendar Modal */}
+      <CalendarModal
+        isOpen={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        selectedDate={today}
+      />
     </div>
   )
 }

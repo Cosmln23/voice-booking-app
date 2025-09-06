@@ -246,6 +246,23 @@ export const settingsApi = {
     apiClient.put('/api/settings/agent', data),
 };
 
+// Calendar API
+export const calendarApi = {
+  getInfo: () => apiClient.get('/api/calendar/info'),
+
+  setup: (data: any) => apiClient.post('/api/calendar/setup', data),
+
+  validate: () => apiClient.get('/api/calendar/validate'),
+
+  test: () => apiClient.post('/api/calendar/test'),
+
+  enable: () => apiClient.put('/api/calendar/enable'),
+
+  disable: () => apiClient.put('/api/calendar/disable'),
+
+  getSetupGuide: () => apiClient.get('/api/calendar/setup-guide'),
+};
+
 // Export all APIs
 export const api = {
   appointments: appointmentsApi,
@@ -254,6 +271,7 @@ export const api = {
   statistics: statisticsApi,
   agent: agentApi,
   settings: settingsApi,
+  calendar: calendarApi,
 };
 
 export default api;

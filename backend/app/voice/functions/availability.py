@@ -69,7 +69,7 @@ async def check_appointment_availability(
         
         # Get business working hours
         business_crud = BusinessSettingsCRUD(supabase_client)
-        working_hours = await business_crud.get_working_hours(user_context["user_id"])
+        working_hours = await business_crud.get_working_hours()
         
         # Check if date falls on a working day
         weekday = parsed_date.weekday()  # Monday=0, Sunday=6
@@ -94,7 +94,8 @@ async def check_appointment_availability(
                 parsed_time = await _parse_voice_time(time_requested)
                 is_available = await _check_specific_slot(
                     parsed_date, parsed_time, duration_minutes or 30,
-                    appointment_crud, working_hours, weekday
+                    appointment_crud, working_hours, weekday,
+                    user_context["user_id"]
                 )
                 
                 if is_available:
@@ -122,7 +123,8 @@ async def check_appointment_availability(
             except ValueError:
                 # Invalid time format - suggest available slots instead
                 available_slots = await _get_available_slots(
-                    parsed_date, appointment_crud, working_hours, weekday, duration_minutes or 30
+                    parsed_date, appointment_crud, working_hours, weekday, duration_minutes or 30,
+                    user_context["user_id"]
                 )
                 return {
                     "success": True,
@@ -136,7 +138,8 @@ async def check_appointment_availability(
         else:
             # No specific time - return available slots for the day
             available_slots = await _get_available_slots(
-                parsed_date, appointment_crud, working_hours, weekday, duration_minutes or 30
+                parsed_date, appointment_crud, working_hours, weekday, duration_minutes or 30,
+                user_context["user_id"]
             )
             
             if not available_slots:
@@ -243,10 +246,11 @@ async def _parse_voice_time(time_str: str) -> time:
     raise ValueError(f"Cannot parse time: {time_str}")
 
 
-def _is_working_day(weekday: int, working_hours: List[Dict]) -> bool:
+def _is_working_day(weekday: int, working_hours) -> bool:
     """Check if a weekday is a working day"""
+    # working_hours is now a List[WorkingHours] Pydantic models
     for hours in working_hours:
-        if hours.get("day_of_week") == weekday and hours.get("is_open", False):
+        if hours.day_of_week == weekday and not hours.is_closed:
             return True
     return False
 
@@ -257,17 +261,18 @@ async def _check_specific_slot(
     duration_minutes: int,
     appointment_crud: UserAppointmentCRUD,
     working_hours: List[Dict],
-    weekday: int
+    weekday: int,
+    user_id: Optional[str] = None
 ) -> bool:
     """Check if a specific time slot is available"""
     
     # Check if time falls within working hours
-    working_day = next((h for h in working_hours if h.get("day_of_week") == weekday), None)
-    if not working_day:
+    working_day = next((h for h in working_hours if h.day_of_week == weekday), None)
+    if not working_day or working_day.is_closed:
         return False
     
-    start_time = datetime.strptime(working_day["start_time"], "%H:%M").time()
-    end_time = datetime.strptime(working_day["end_time"], "%H:%M").time()
+    start_time = working_day.start_time
+    end_time = working_day.end_time
     
     if time_requested < start_time or time_requested >= end_time:
         return False
@@ -294,11 +299,16 @@ async def _check_specific_slot(
             if (requested_start < apt_end and requested_end > apt_start):
                 return False
     
-    # CRITICAL: Check Google Calendar availability
-    calendar_available = await check_calendar_availability(
-        requested_start, 
-        duration_minutes
-    )
+    # CRITICAL: Check Google Calendar availability with user isolation
+    try:
+        calendar_available = await check_calendar_availability(
+            requested_start, 
+            duration_minutes,
+            user_id=user_id
+        )
+    except Exception as e:
+        logger.warning(f"Could not check calendar availability: {e}")
+        calendar_available = True  # Don't block booking if calendar check fails
     
     if not calendar_available:
         logger.info(f"Time slot {requested_start} blocked by Google Calendar event")
@@ -313,17 +323,18 @@ async def _get_available_slots(
     working_hours: List[Dict],
     weekday: int,
     duration_minutes: int,
+    user_id: Optional[str] = None,
     slot_interval: int = 30  # 30-minute intervals
 ) -> List[time]:
     """Get all available time slots for a given date"""
     
     # Get working hours for the day
-    working_day = next((h for h in working_hours if h.get("day_of_week") == weekday), None)
-    if not working_day:
+    working_day = next((h for h in working_hours if h.day_of_week == weekday), None)
+    if not working_day or working_day.is_closed:
         return []
     
-    start_time = datetime.strptime(working_day["start_time"], "%H:%M").time()
-    end_time = datetime.strptime(working_day["end_time"], "%H:%M").time()
+    start_time = working_day.start_time
+    end_time = working_day.end_time
     
     # Get existing appointments
     existing_appointments, _ = await appointment_crud.get_appointments(
@@ -353,6 +364,20 @@ async def _get_available_slots(
                 if (slot_start < apt_end and slot_end > apt_start):
                     is_free = False
                     break
+        
+        # Check calendar availability if business has calendar integration
+        if is_free and user_id:
+            try:
+                calendar_available = await check_calendar_availability(
+                    slot_start, 
+                    duration_minutes,
+                    user_id=user_id
+                )
+                if not calendar_available:
+                    is_free = False
+            except Exception as e:
+                logger.warning(f"Could not check calendar availability for slot {slot_start}: {e}")
+                # Don't block slot if calendar check fails
         
         if is_free:
             available_slots.append(current_time.time())

@@ -20,6 +20,8 @@ from googleapiclient.errors import HttpError
 from app.core.config import settings
 from app.core.logging import get_logger
 from app.models.appointment import Appointment, AppointmentStatus
+from app.models.calendar_settings import CalendarSettings, GoogleCalendarCredentials
+from app.database.crud_calendar_settings import CalendarSettingsCRUD
 
 logger = get_logger(__name__)
 
@@ -33,22 +35,85 @@ class GoogleCalendarService:
         'https://www.googleapis.com/auth/calendar.events'
     ]
     
-    def __init__(self):
-        self.is_enabled = settings.google_calendar_enabled
-        self.calendar_id = settings.google_calendar_id
+    def __init__(
+        self, 
+        user_id: Optional[str] = None, 
+        business_calendar_id: Optional[str] = None,
+        supabase_client = None
+    ):
+        self.user_id = user_id
+        self.supabase_client = supabase_client
+        self.business_settings: Optional[CalendarSettings] = None
+        
+        # Initialize business-specific settings
+        self.is_enabled = False
+        self.calendar_id = settings.google_calendar_id  # Fallback
         self.timezone = pytz.timezone(settings.google_calendar_timezone)
         self.credentials = None
         self.service = None
         
-        # Initialize service if enabled
-        if self.is_enabled and settings.google_calendar_credentials_b64:
-            self._initialize_service()
+        # Load business-specific calendar settings
+        if user_id and supabase_client:
+            self._load_business_calendar_settings()
+        else:
+            # Fallback to global settings
+            self.is_enabled = settings.google_calendar_enabled
+            if self.is_enabled and settings.google_calendar_credentials_b64:
+                self._initialize_service_from_global_settings()
     
-    def _initialize_service(self) -> bool:
-        """Initialize Google Calendar API service"""
+    async def _load_business_calendar_settings(self):
+        """Load business-specific calendar settings from database"""
+        try:
+            calendar_crud = CalendarSettingsCRUD(self.supabase_client)
+            self.business_settings = await calendar_crud.get_calendar_settings(self.user_id)
+            
+            if self.business_settings and self.business_settings.is_fully_configured():
+                self.is_enabled = self.business_settings.google_calendar_enabled
+                self.calendar_id = self.business_settings.google_calendar_id
+                self.timezone = pytz.timezone(self.business_settings.google_calendar_timezone)
+                
+                # Initialize service with business credentials
+                if self.is_enabled:
+                    self._initialize_service_from_business_settings()
+                    
+                logger.info(f"Loaded business calendar settings for user {self.user_id}: {self.calendar_id}")
+            else:
+                logger.warning(f"No calendar settings found for user {self.user_id}, using fallback")
+                
+        except Exception as e:
+            logger.error(f"Error loading business calendar settings for user {self.user_id}: {e}")
+    
+    def _initialize_service_from_business_settings(self) -> bool:
+        """Initialize service from business-specific credentials"""
+        try:
+            if not self.business_settings or not self.business_settings.google_calendar_credentials:
+                logger.error("No business calendar credentials available")
+                return False
+            
+            # Use business-specific credentials
+            credentials_dict = self.business_settings.google_calendar_credentials.to_dict()
+            
+            # Create service account credentials
+            self.credentials = ServiceAccountCredentials.from_service_account_info(
+                credentials_dict, scopes=self.SCOPES
+            )
+            
+            # Build Calendar API service
+            self.service = build('calendar', 'v3', credentials=self.credentials)
+            
+            logger.info(f"Business calendar service initialized: {self.calendar_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize business calendar service: {e}")
+            self.is_enabled = False
+            return False
+    
+    def _initialize_service_from_global_settings(self) -> bool:
+        """Initialize service from global settings (fallback)"""
         try:
             if not settings.google_calendar_credentials_b64:
-                logger.warning("Google Calendar credentials not configured")
+                logger.warning("Global calendar credentials not configured")
                 return False
             
             # Decode base64 credentials
@@ -65,11 +130,11 @@ class GoogleCalendarService:
             # Build Calendar API service
             self.service = build('calendar', 'v3', credentials=self.credentials)
             
-            logger.info(f"Google Calendar service initialized for calendar: {self.calendar_id}")
+            logger.info(f"Global calendar service initialized: {self.calendar_id}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to initialize Google Calendar service: {e}")
+            logger.error(f"Failed to initialize global calendar service: {e}")
             self.is_enabled = False
             return False
     
@@ -439,31 +504,71 @@ class GoogleCalendarService:
             return None
 
 
-# Global calendar service instance
+# Global calendar service instance (fallback)
 calendar_service = GoogleCalendarService()
 
 
-# Convenience functions for voice functions integration
+# Business-specific calendar service factory
+async def get_business_calendar_service(
+    user_id: str, 
+    supabase_client,
+    business_calendar_id: Optional[str] = None
+) -> GoogleCalendarService:
+    """Get calendar service for specific business with full isolation"""
+    service = GoogleCalendarService(
+        user_id=user_id, 
+        business_calendar_id=business_calendar_id,
+        supabase_client=supabase_client
+    )
+    # Load settings is called in __init__ but is async, so we need to ensure it completes
+    if user_id and supabase_client:
+        await service._load_business_calendar_settings()
+    return service
+
+
+# Convenience functions for voice functions integration with complete business isolation
 async def create_appointment_calendar_event(
     appointment: Dict[str, Any], 
-    client_name: str
+    client_name: str,
+    user_id: Optional[str] = None,
+    supabase_client = None
 ) -> Optional[str]:
-    """Create calendar event for new appointment"""
-    return await calendar_service.create_calendar_event(appointment, client_name)
+    """Create calendar event for new appointment with complete business isolation"""
+    if user_id and supabase_client:
+        business_calendar = await get_business_calendar_service(user_id, supabase_client)
+        return await business_calendar.create_calendar_event(appointment, client_name)
+    else:
+        # Fallback to global service
+        return await calendar_service.create_calendar_event(appointment, client_name)
 
 
 async def check_calendar_availability(
     start_datetime: datetime, 
-    duration_minutes: int = 60
+    duration_minutes: int = 60,
+    user_id: Optional[str] = None,
+    supabase_client = None
 ) -> bool:
-    """Check if time slot is available"""
+    """Check if time slot is available with complete business isolation"""
     end_datetime = start_datetime + timedelta(minutes=duration_minutes)
-    return await calendar_service.check_availability(start_datetime, end_datetime)
+    
+    if user_id and supabase_client:
+        business_calendar = await get_business_calendar_service(user_id, supabase_client)
+        return await business_calendar.check_availability(start_datetime, end_datetime)
+    else:
+        # Fallback to global service
+        return await calendar_service.check_availability(start_datetime, end_datetime)
 
 
 async def get_calendar_busy_times(
     start_date: date, 
-    end_date: date
+    end_date: date,
+    user_id: Optional[str] = None,
+    supabase_client = None
 ) -> List[Tuple[datetime, datetime]]:
-    """Get busy time slots from calendar"""
-    return await calendar_service.get_busy_slots(start_date, end_date)
+    """Get busy time slots from calendar with complete business isolation"""
+    if user_id and supabase_client:
+        business_calendar = await get_business_calendar_service(user_id, supabase_client)
+        return await business_calendar.get_busy_slots(start_date, end_date)
+    else:
+        # Fallback to global service  
+        return await calendar_service.get_busy_slots(start_date, end_date)

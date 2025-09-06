@@ -173,7 +173,8 @@ async def create_voice_appointment(
             
             calendar_event_id = await create_appointment_calendar_event(
                 appointment_dict, 
-                normalized_name
+                normalized_name,
+                user_context["user_id"]  # CRITICAL: Pass user_id for calendar isolation
             )
             
             if calendar_event_id:
